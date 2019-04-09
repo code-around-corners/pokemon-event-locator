@@ -3,8 +3,6 @@
 include_once("resources/php/config.php");
 include_once("resources/php/helpers.php");
 
-define('MAX_PER_RUN', 500);
-
 if ( php_sapi_name() != "cli" ) {
 	echo "This script cannot be run via the browser.";
 	return;
