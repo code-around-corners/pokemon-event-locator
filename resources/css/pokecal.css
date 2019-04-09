@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat|Raleway|Rubik');
+
+body {
+	background-color: #202020;
+	background-image: url("../images/bgblack.gif");
+	background-repeat: repeat;
+	font-family: 'Raleway', sans-serif !important;
+}
+
+h1 {
+	font-family: 'Rubik', sans-serif !important;
+	margin-bottom: 0px !important;
+}
+
+h4 {
+	margin-bottom: 0px !important;
+}
+
+h6 {
+	margin-top: 8px !important;
+}
+
+h2,h3,h4,h5,h6 {
+	font-family: 'Montserrat', sans-serif !important;
+}
+
+.map {
+	height: 150px;
+}
