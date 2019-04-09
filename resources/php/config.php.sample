@@ -1,0 +1,16 @@
+<?php
+
+define('DB_HOST', '');
+define('DB_NAME', '');
+
+define('DB_UPDATE_USER', '');
+define('DB_UPDATE_PASS', '');
+
+define('DB_READ_USER', '');
+define('DB_READ_PASS', '');
+
+define('MAX_PER_RUN', 500);
+
+define('MAPBOX_TOKEN', '');
+
+?>
