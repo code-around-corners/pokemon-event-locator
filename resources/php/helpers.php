@@ -20,6 +20,7 @@ function buildSearchFilter() {
 	if ( isset($_GET["product"]) )								$filter["product"] = $_GET["product"];
 	if ( isset($_GET["category"]) )								$filter["category"] = $_GET["category"];
 	if ( isset($_GET["premierEvent"]) )							$filter["premierEvent"] = $_GET["premierEvent"];
+	if ( isset($_GET["premierGroup"]) )							$filter["premierGroup"] = $_GET["premierGroup"];
 	if ( isset($_GET["premierOnly"]) )							$filter["premierOnly"] = true;
 	if ( isset($_GET["excludePremier"]) )							$filter["excludePremier"] = true;
 	if ( isset($_GET["startDate"]) && $_GET["startDate"] != "" )	$filter["startDate"] = $_GET["startDate"];
@@ -94,6 +95,16 @@ function getFilteredTournamentData($filters) {
 		
 		foreach($filters["premierEvent"] as $premierEvent) {
 			$sql .= " Or premierEvent = '" . $premierEvent . "'";
+		}
+		
+		$sql .= ")";
+	}
+	
+	if ( isset($filters["premierGroup"]) ) {
+		$sql .= " And (1=0";
+		
+		foreach($filters["premierGroup"] as $premierGroup) {
+			$sql .= " Or premierGroup = '" . $premierGroup . "'";
 		}
 		
 		$sql .= ")";
@@ -296,6 +307,23 @@ function fixProvinces() {
 	$sql .= "When provinceState = 'ACT' Then 'Australian Capital Territory' ";
 	$sql .= "Else provinceState End ";
 	$sql .= "Where countryName = 'Australia';";
+
+	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
+	$mysqli->query($sql);
+	$mysqli->close();
+}
+
+function addPremierGroups() {
+	$sql = "Update events Set premierGroup = Case ";
+	$sql .= "When premierEvent Like '%Regional%' Then 'Regional Championship' ";
+	$sql .= "When premierEvent Like '%Special%' Then 'Special Championship' ";
+	$sql .= "When premierEvent Like '%Cup%' Then 'League Cup' ";
+	$sql .= "When premierEvent Like '%League%Challenge%' Then 'League Challenge' ";
+	$sql .= "When premierEvent Like '%Premier%Challenge%' Then 'Premier Challenge' ";
+	$sql .= "When premierEvent Like '%Midseason%Showdown%' Then 'Midseason Showdown' ";
+	$sql .= "When premierEvent Like '%Prerelease%' Then 'Prerelease' ";
+	$sql .= "Else '' End ";
+	$sql .= "Where premierEvent <> '';";
 
 	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
 	$mysqli->query($sql);

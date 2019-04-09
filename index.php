@@ -24,6 +24,7 @@ include_once("resources/php/helpers.php");
 $countryNames = getDistinctList("countryName");
 $countryProvinceStates = getProvinceList();
 $premierEvents = getDistinctList("premierEvent");
+$premierGroups = getDistinctList("premierGroup");
 $products = getDistinctList("product");
 $categories = getDistinctList("category");
 
@@ -88,6 +89,21 @@ foreach($countryProvinceStates as $countryName => $provinceStates) {
 
 <div class="col-12 col-md-6 col-xl-4">
 <div class="form-group">
+<label for="premierGroup"><b>Select Premier Event Group:</b></label>
+<select class="select2 form-control" id="premierGroup" name="premierGroup[]" multiple="multiple" width="100%">
+<?php
+
+foreach($premierGroups as $premierGroup) {
+	echo "<option value='" . $premierGroup . "'>" . $premierGroup . "</option>";
+}
+
+?>
+</select>
+</div>
+</div>
+
+<div class="col-12 col-md-6 col-xl-4">
+<div class="form-group">
 <label for="premierEvent"><b>Select Premier Event Type:</b></label>
 <select class="select2 form-control" id="premierEvent" name="premierEvent[]" multiple="multiple" width="100%">
 <?php
@@ -103,7 +119,7 @@ foreach($premierEvents as $premierEvent) {
 
 <div class="col-12 col-md-6 col-xl-4">
 <div class="form-group">
-<label for="product"><b>Select Products:</b></label>
+<label for="product"><b>Select Game Type:</b></label>
 <select class="select2 form-control" id="product" name="product[]" multiple="multiple" width="100%">
 <?php
 
@@ -118,7 +134,7 @@ foreach($products as $product) {
 
 <div class="col-12 col-md-6 col-xl-4">
 <div class="form-group">
-<label for="category"><b>Select Categories:</b></label>
+<label for="category"><b>Select Game Formats:</b></label>
 <select class="select2 form-control" id="category" name="category[]" multiple="multiple" width="100%">
 <?php
 
@@ -144,6 +160,9 @@ foreach($categories as $category) {
 </div>
 </div>
 </div>
+
+</div>
+<div class="row">
 
 <div class="col-12 col-md-6 col-xl-4">
 <div class="form-group">
@@ -178,6 +197,7 @@ $(document).ready(function() {
     $("select#countryName").select2();
     $("select#provinceState").select2();
     $("select#premierEvent").select2();
+    $("select#premierGroup").select2();
     $("select#product").select2();
     $("select#category").select2();
     

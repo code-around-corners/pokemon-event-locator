@@ -9,6 +9,7 @@ if ( php_sapi_name() != "cli" ) {
 } else {
 	updateAllTournaments();
 	fixProvinces();
+	addPremierGroups();
 }
 
 function updateAllTournaments() {
