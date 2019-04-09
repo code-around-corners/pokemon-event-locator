@@ -218,7 +218,7 @@ function updateTournamentId($tournamentID) {
 }
 
 function saveToDatabase($json) {
-	$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
 	$data = json_decode($json, true);
 	
 	$sql = "Delete From events Where tournamentID = " . $data["tournamentID"];
@@ -236,7 +236,7 @@ function saveToDatabase($json) {
 function flushDeletedEventIDs($deletedEventIDs) {
 	if ( count($deletedEventIDs) == 0 ) return;
 	
-	$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
 	$data = json_decode($json, true);
 	
 	$sql = "Delete From events Where tournamentID ( " . implode(",", $deletedEventIDs) . " )";
@@ -246,7 +246,7 @@ function flushDeletedEventIDs($deletedEventIDs) {
 }
 
 function getAllCurrentStoredIDs() {
-	$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
 	$sql = "Select tournamentID From events Where date >= CURRENT_DATE;";
 	$result = $mysqli->query($sql);
 	
@@ -265,7 +265,7 @@ function getAllCurrentStoredIDs() {
 function getExpiredTournamentIDs() {
 	$cacheTime = 86400 * 7;
 	
-	$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
 	$sql = "Select tournamentID From events Where Date_Add(lastUpdated, INTERVAL " . $cacheTime . " second) < CURRENT_TIMESTAMP Or ";
 	$sql .= "(Date_Sub(date, INTERVAL 7 day) < CURRENT_DATE And Date_Add(lastUpdated, INTERVAL 86400 second) < CURRENT_TIMESTAMP);";
 	$result = $mysqli->query($sql);

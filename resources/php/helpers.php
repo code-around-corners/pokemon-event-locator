@@ -29,7 +29,7 @@ function buildSearchFilter() {
 }
 
 function getSingleTournamentData($tournamentID) {
-	$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+	$mysqli = new mysqli(DB_HOST, DB_READ_USER, DB_READ_PASS, DB_NAME);
 	$sql = "Select eventJson, lastUpdated From events Where tournamentID = " . $tournamentID . ";";
 	$result = $mysqli->query($sql);
 	$data = null;
@@ -115,7 +115,7 @@ function getFilteredTournamentData($filters) {
 	
 	$sql .= " Order By date, tournamentID;";
 	
-	$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+	$mysqli = new mysqli(DB_HOST, DB_READ_USER, DB_READ_PASS, DB_NAME);
 	$result = $mysqli->query($sql);
 	$tournaments = array();
 	
@@ -211,7 +211,7 @@ function makeTimezoneData($data) {
 }
 
 function getTimezoneData($timezone) {
-	$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
 
 	$sql = "Select vTimezone From timezones Where timezone = '" . $timezone . "';";
 	$result = $mysqli->query($sql);
@@ -238,7 +238,7 @@ function getTimezoneData($timezone) {
 }
 
 function getDistinctList($fieldName) {
-	$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+	$mysqli = new mysqli(DB_HOST, DB_READ_USER, DB_READ_PASS, DB_NAME);
 	$sql = "Select Distinct " . $fieldName . " From events Where " . $fieldName . " <> '';";
 	
 	$result = $mysqli->query($sql);
@@ -259,7 +259,7 @@ function getDistinctList($fieldName) {
 }
 
 function getProvinceList() {
-	$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+	$mysqli = new mysqli(DB_HOST, DB_READ_USER, DB_READ_PASS, DB_NAME);
 	$sql = "Select Distinct countryName, provinceState From events Where countryName <> '' And provinceState <> '' ";
 	$sql .= "Order By countryName, provinceState;";
 	
