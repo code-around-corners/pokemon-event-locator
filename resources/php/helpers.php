@@ -284,4 +284,22 @@ function getProvinceList() {
 	return $countryNames;
 }
 
+function fixProvinces() {
+	$sql = "Update events Set provinceState = Case ";
+	$sql .= "When provinceState = 'Vic' Then 'Victoria' ";
+	$sql .= "When provinceState = 'NSW' Then 'New South Wales' ";
+	$sql .= "When provinceState = 'NT' Then 'Northern Territory' ";
+	$sql .= "When provinceState = 'QLD' Then 'Queensland' ";
+	$sql .= "When provinceState = 'Select a State' Then '' ";
+	$sql .= "When provinceState = 'Tas' Then 'Tasmania' ";
+	$sql .= "When provinceState = 'WA' Then 'Western Australia' ";
+	$sql .= "When provinceState = 'ACT' Then 'Australian Capital Territory' ";
+	$sql .= "Else provinceState End ";
+	$sql .= "Where countryName = 'Australia';";
+
+	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
+	$mysqli->query($sql);
+	$mysqli->close();
+}
+
 ?>

@@ -8,6 +8,7 @@ if ( php_sapi_name() != "cli" ) {
 	return;
 } else {
 	updateAllTournaments();
+	fixProvinces();
 }
 
 function updateAllTournaments() {
