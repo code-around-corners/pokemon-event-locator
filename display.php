@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>Pokémon Calendar Subscriber</title>
+<title>Pokémon Event Locator/Subscription Tool</title>
 	<meta name="viewport" content="width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no"/>
 	<link href="resources/css/pokecal.css" rel="stylesheet" />
 
@@ -35,8 +35,8 @@ $url = str_replace("display.php", "calendar.php", $_SERVER["HTTP_HOST"] . $_SERV
 
 <div class="card border-dark">
 <div class="card-header text-light bg-danger">	
-<h1 class="d-none d-sm-none d-md-block">Pokémon Calendar Subscriber</h1>
-<h4 class="d-block d-sm-block d-md-none"><center>Pokémon Calendar Subscriber</center></h4>
+<h1 class="d-none d-sm-none d-md-block">Pokémon Event Locator/Subscription Tool</h1>
+<h4 class="d-block d-sm-block d-md-none"><center>Pokémon Event Locator/Subscription Tool</center></h4>
 </div>
 
 <div class="card-body">
