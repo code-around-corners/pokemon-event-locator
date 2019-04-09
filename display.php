@@ -111,7 +111,11 @@ foreach ( $tournaments as $tournament ) {
 ?>
 <div class="card border-dark">
 	<div class="card-header<?php echo $baseClass; ?>">
-		<?php echo $emoji . " " . $tournament["premierEvent"]; ?><br />
+		<?php
+			if ( $tournament["premierEvent"] != '' ) {
+				echo $emoji . " " . $tournament["premierEvent"]; ?><br /><?php
+			}
+		?>
 		<?php echo flagMaster::emojiFlag($tournament["countryCode"]) . " " . $tournament["tournamentName"]; ?>
 	</div>
 	<div class="card-body">
