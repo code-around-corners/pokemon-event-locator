@@ -23,6 +23,7 @@ CREATE TABLE `events` (
   `provinceState` varchar(64) NOT NULL,
   `eventJson` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `lastUpdated` timestamp NOT NULL DEFAULT current_timestamp(),
+  `deleted` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`tournamentID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
