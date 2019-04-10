@@ -163,6 +163,11 @@ $categories = getDistinctList("category");
 				</div>
 			</div>
 		</form>
+		
+		<div class="text-center text-light small">
+			Developed by <a href="https://www.codearoundcorners.com/">Tim Crockford</a> - 
+			Source Code available on <a href="https://github.com/timcrockford/pokemon-event-locator">GitHub</a>
+		</div>
 	</div>
 </body>
 

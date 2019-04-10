@@ -178,6 +178,11 @@ $url = str_replace("display.php", "calendar.php", $_SERVER["HTTP_HOST"] . $_SERV
 			</div>
 <?		} ?>
 		</div>
+		
+		<div class="text-center text-light small">
+			Developed by <a href="https://www.codearoundcorners.com/">Tim Crockford</a> - 
+			Source Code available on <a href="https://github.com/timcrockford/pokemon-event-locator">GitHub</a>
+		</div>
 	</div>
 </body>
 
