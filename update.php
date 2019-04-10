@@ -3,15 +3,20 @@
 include_once("resources/php/config.php");
 include_once("resources/php/helpers.php");
 
+// Due to the time this script takes to run, it's not intended to be run directly through
+// the browser, instead it should be called via a cron job using the php cli binary.
 if ( php_sapi_name() != "cli" ) {
 	echo "This script cannot be run via the browser.";
 	return;
 } else {
+	// When we run the update script, we first pull down any new or updates tournaments,
+	// then run our cleansing scripts.
 	updateAllTournaments();
 	fixProvinces();
 	addPremierGroups();
 }
 
+// Updates up to MAX_PER_RUN tournaments in the database.
 function updateAllTournaments() {
 	$webTournamentIDs = getAllTournamentIDs();
 	$dbTournamentIDs = getAllCurrentStoredIDs();
@@ -38,6 +43,9 @@ function updateAllTournaments() {
 	}
 }
 
+// Compares the list of events on the Pokemon website to the list in the database, and
+// returns any tournament IDs that are no longer on the website (presumably because they've
+// been cancelled).
 function getDeletedEventIDs($webTournamentIDs, $dbTournamentIDs) {
 	$deletedEventIDs = array();
 	
@@ -58,6 +66,8 @@ function getDeletedEventIDs($webTournamentIDs, $dbTournamentIDs) {
 	return $deletedEventIDs;
 }
 
+// Compares the web tournament list with the database one to highlight any tournaments that
+// are not currently in the database and need to be added.
 function getNewEventIDs($webTournamentIDs, $dbTournamentIDs) {
 	$newEventIDs = array();
 	
@@ -78,6 +88,9 @@ function getNewEventIDs($webTournamentIDs, $dbTournamentIDs) {
 	return $newEventIDs;
 }
 
+// This performs a search for all events on the Pokemon website. As of the latest commit this is around 27
+// pages at 100 events per page, so this will make roughly that many external calls. It stops when it finds
+// a page that doesn't have a "Next ->" link on it.
 function getAllTournamentIDs() {
 	$baseSearchUrl = "https://www.pokemon.com/us/play-pokemon/pokemon-events/find-an-event/?";
 	$baseSearchUrl .= "city=Melbourne&results_pp=100&location_name=&event_type=tournament&event_type=premier&end_date=&event_name=&";
@@ -94,6 +107,8 @@ function getAllTournamentIDs() {
 	return $tournamentIDs;
 }
 
+// This extracts all the tournament IDs from a search page and adds them to the tournamentIDs array.
+// The function returns true when there are no pages left.
 function getTournamentIDs($baseSearchUrl, &$tournamentIDs, $pageId) {
 	$dom = new DOMDocument;
 	@$dom->loadHTML("<?xml encoding='utf-8' ?>" . file_get_contents($baseSearchUrl . $pageId));
@@ -126,6 +141,8 @@ function getTournamentIDs($baseSearchUrl, &$tournamentIDs, $pageId) {
 	return $lastPage;
 }
 
+// This will take a tournament ID, download the latest information for that tournament, parse
+// it into JSON format and save it to the database.
 function updateTournamentId($tournamentID) {
 	$url = "https://www.pokemon.com/us/play-pokemon/pokemon-events/" . preg_replace("/(..)(..)(......)/", "$1-$2-$3", $tournamentID) . "/";
 	
@@ -200,7 +217,7 @@ function updateTournamentId($tournamentID) {
 			}
 		}
 		
-		$tzUrl = "http://api.timezonedb.com/v2.1/get-time-zone?key=***REMOVED***&format=json&by=position&lat=";
+		$tzUrl = "http://api.timezonedb.com/v2.1/get-time-zone?key=" . TIMEZONE_API_KEY . "&format=json&by=position&lat=";
 		$tzUrl .= $eventData["coordinates"][0] . "&lng=" . $eventData["coordinates"][1];
 		
 		$tzData = json_decode(@file_get_contents($tzUrl), true);
@@ -217,6 +234,8 @@ function updateTournamentId($tournamentID) {
 	}
 }
 
+// This function saves the actual JSON tournament to the database. It assumes a delete first even
+// if the tournament isn't already there.
 function saveToDatabase($json) {
 	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
 	$data = json_decode($json, true);
@@ -233,6 +252,7 @@ function saveToDatabase($json) {
 	$mysqli->close();
 }
 
+// This function deletes tournament IDs in bulk.
 function flushDeletedEventIDs($deletedEventIDs) {
 	if ( count($deletedEventIDs) == 0 ) return;
 	
@@ -245,6 +265,9 @@ function flushDeletedEventIDs($deletedEventIDs) {
 	$mysqli->close();
 }
 
+// This returns an array of all the current tournament IDs starting from today's date. This is because
+// once tournaments are finished, you need to be logged into the website to see them, so we don't touch
+// tournaments that occur in the past.
 function getAllCurrentStoredIDs() {
 	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
 	$sql = "Select tournamentID From events Where date >= CURRENT_DATE;";
@@ -262,6 +285,9 @@ function getAllCurrentStoredIDs() {
 	return $tournamentIDs;
 }
 
+// To avoid excessive downloads, we only refresh tournament details once a week, or daily if the event is
+// less than a week away. This returns all the tournament IDs that meet that criteria to queue them to be
+// refreshed.
 function getExpiredTournamentIDs() {
 	$cacheTime = 86400 * 7;
 	

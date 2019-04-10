@@ -1,7 +1,11 @@
 <?php
 	
+define("MAJOR_VERSION", 3);
+define("MINOR_VERSION", 0);
+
 include_once("resources/php/config.php");
 
+// This function gets used to standardise the field names from the Pokemon website.
 function camelCase($str, array $noStrip = []) {
     $str = preg_replace('/[^a-z0-9' . implode("", $noStrip) . ']+/i', ' ', $str);
     $str = trim($str);
@@ -12,6 +16,7 @@ function camelCase($str, array $noStrip = []) {
     return $str;
 }
 
+// Extract all the GET parameters and convert them into an array.
 function buildSearchFilter() {
 	$filter = array();
 	
@@ -29,24 +34,7 @@ function buildSearchFilter() {
 	return $filter;
 }
 
-function getSingleTournamentData($tournamentID) {
-	$mysqli = new mysqli(DB_HOST, DB_READ_USER, DB_READ_PASS, DB_NAME);
-	$sql = "Select eventJson, lastUpdated From events Where tournamentID = " . $tournamentID . ";";
-	$result = $mysqli->query($sql);
-	$data = null;
-	
-	if ( $result->num_rows == 1 ) {
-		$tournament = $result->fetch_assoc();
-		$data = json_decode($tournament["eventJson"], true);
-		$data["lastUpdated"] = $tournament["lastUpdated"];
-	}
-	
-	$result->free();
-	$mysqli->close();
-	
-	return $data;
-}
-
+// Extract all the tournaments matching the specified filters.
 function getFilteredTournamentData($filters) {
 	$sql = "Select tournamentID, eventJson, lastUpdated From events Where 1=1";
 	
@@ -144,6 +132,7 @@ function getFilteredTournamentData($filters) {
 	return $tournaments;
 }
 
+// Convert a single tournament into iCal format.
 function convertDataToIcal($data) {
 	$ical = "BEGIN:VEVENT\r\n";
 	$ical .= "UID:" . $data["tournamentID"] . "@pokecal.codearoundcorners.com\r\n";
@@ -178,10 +167,11 @@ function convertDataToIcal($data) {
 	return $ical;
 }
 
+// Common iCal header.
 function makeCalendarHeader() {
 	$ical = "BEGIN:VCALENDAR\r\n";
 	$ical .= "VERSION:2.0\r\n";
-	$ical .= "PRODID:-//Code Around Corners//Pokemon Calendar Subscription Tool v3.00//EN\r\n";
+	$ical .= "PRODID:-//Code Around Corners//Pokemon Calendar Subscription Tool v" . getVersionNumber() . "//EN\r\n";
 	$ical .= "CALSCALE:GREGORIAN\r\n";
 	$ical .= "METHOD:PUBLISH\r\n";
 	$ical .= "X-WR-CALNAME:Pokemon Events\r\n";
@@ -190,10 +180,12 @@ function makeCalendarHeader() {
 	return $ical;
 }
 
+// Common iCal footer.
 function makeCalendarFooter() {
 	return "END:VCALENDAR\r\n";
 }
 
+// Extract all the necessary timezone information from the tournament list.
 function makeTimezoneData($data) {
 	$timezones = array();
 	
@@ -221,6 +213,7 @@ function makeTimezoneData($data) {
 	return $ical;
 }
 
+// Uses tzurl.org to create VTIMEZONE blocks.
 function getTimezoneData($timezone) {
 	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
 
@@ -248,9 +241,11 @@ function getTimezoneData($timezone) {
 	return $timezoneData;
 }
 
+// Get a list of all the distinct values for a specified field in the events table. Ignores blanks.
+// The data is sorted alphabetically.
 function getDistinctList($fieldName) {
 	$mysqli = new mysqli(DB_HOST, DB_READ_USER, DB_READ_PASS, DB_NAME);
-	$sql = "Select Distinct " . $fieldName . " From events Where " . $fieldName . " <> '';";
+	$sql = "Select Distinct " . $fieldName . " From events Where " . $fieldName . " <> '' Order By " . $fieldName . ";";
 	
 	$result = $mysqli->query($sql);
 	$list = array();
@@ -264,11 +259,12 @@ function getDistinctList($fieldName) {
 	$result->free();
 	$mysqli->close();
 	
-	asort($list);
-	
 	return $list;
 }
 
+// Gets a list of all the provinces by country. Used to allow the selection box to filter the list
+// based on the country chosen. Also helps in the event of the same province name being relevant to
+// multiple countries.
 function getProvinceList() {
 	$mysqli = new mysqli(DB_HOST, DB_READ_USER, DB_READ_PASS, DB_NAME);
 	$sql = "Select Distinct countryName, provinceState From events Where countryName <> '' And provinceState <> '' ";
@@ -295,6 +291,26 @@ function getProvinceList() {
 	return $countryNames;
 }
 
+// Simple function to return the current version number of the software, including the latest GitHub
+// reference if available.
+function getVersionNumber() {
+	$major = MAJOR_VERSION;
+	$minor = '00' . MINOR_VERSION;
+	$minor = substr($minor, -2, 2);
+	
+	$version = $major . '.' . $minor;
+	
+	if ( ($git = @file_get_contents('.git/HEAD')) !== false ) {
+		$file = substr($git, 5, strlen($git) - 6);
+		$gitid = file_get_contents('.git/' . $file);
+		$version .= '-' . substr($gitid, 0, 10);
+	}
+	
+	return $version;
+}
+
+// Handled cleansing of the province names. Seems some countries don't have a standard list
+// available on the Pokemon site and are freeform text.
 function fixProvinces() {
 	$sql = "Update events Set provinceState = Case ";
 	$sql .= "When provinceState = 'Vic' Then 'Victoria' ";
@@ -313,6 +329,8 @@ function fixProvinces() {
 	$mysqli->close();
 }
 
+// Group premier events into single items. This is helpful when dealing with things like League
+// or Premier Challenges that have a different premier event label every month.
 function addPremierGroups() {
 	$sql = "Update events Set premierGroup = Case ";
 	$sql .= "When premierEvent Like '%Regional%' Then 'Regional Championship' ";
