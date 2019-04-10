@@ -20,7 +20,7 @@ if ( php_sapi_name() != "cli" ) {
 function updateAllTournaments() {
 	$webTournamentIDs = getAllTournamentIDs();
 	$dbTournamentIDs = getAllCurrentStoredIDs();
-	$deletedtournamentIDs = getDeletedEventIDs($webTournamentIDs, $dbTournamentIDs);
+	$deletedTournamentIDs = getDeletedEventIDs($webTournamentIDs, $dbTournamentIDs);
 	$newTournamentIDs = getNewEventIDs($webTournamentIDs, $dbTournamentIDs);
 	
 	flushDeletedEventIDs($deletedTournamentIDs);
@@ -31,6 +31,7 @@ function updateAllTournaments() {
 	echo "Found Tournaments on Pokemon.com - " . count($webTournamentIDs) . "\r\n";
 	echo "Expired Tournaments to Refresh - " . count($expiredTournamentIDs) . "\r\n";
 	echo "New Tournaments to Add - " . count($newTournamentIDs) . "\r\n";
+	echo "Cancelled Tournaments to Delete - " . count($deletedTournamentIDs) . " " . implode(",", $deletedTournamentIDs) . "\r\n";
 	
 	foreach ( $expiredTournamentIDs as $tournamentID ) {
 		if ( $updatedCount++ == MAX_PER_RUN ) break;
@@ -116,9 +117,23 @@ function getTournamentIDs($baseSearchUrl, &$tournamentIDs, $pageId) {
 	$main = $dom->getElementById("table-1");
 	
 	if ( $main ) {
-		foreach ( $main->getElementsByTagName("a") as $link ) {
-			$tournamentID = preg_replace("/.*([0-9][0-9])\-([0-9][0-9])\-([0-9][0-9][0-9][0-9][0-9][0-9]).*/", "$1$2$3", $link->getAttribute("href"));
-			$tournamentIDs[count($tournamentIDs)] = $tournamentID;
+		foreach ( $main->getElementsByTagName("tbody") as $content ) {
+			foreach ( $content->getElementsByTagName("tr") as $row ) {
+				$eventCancelled = false;
+				
+				foreach ( $row->getElementsByTagName("td") as $cell ) {
+					if ( trim($cell->textContent) == "Cancelled" ) {
+						$eventCancelled = true;
+					}
+				}
+				
+				if ( ! $eventCancelled ) {
+					foreach ( $row->getElementsByTagName("a") as $link ) {
+						$tournamentID = preg_replace("/.*([0-9][0-9])\-([0-9][0-9])\-([0-9][0-9][0-9][0-9][0-9][0-9]).*/", "$1$2$3", $link->getAttribute("href"));
+						$tournamentIDs[count($tournamentIDs)] = $tournamentID;
+					}
+				}
+			}			
 		}
 	}
 	
@@ -230,8 +245,9 @@ function updateTournamentId($tournamentID) {
 		if ( $eventData["countryName"] ) {
 			echo json_encode($eventData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 			saveToDatabase($json);
-			echo "";
 		}	
+	} else {
+		flushDeletedEventIDs([$tournamentID]);
 	}
 }
 
@@ -245,25 +261,23 @@ function saveToDatabase($json) {
 	$mysqli->query($sql);
 	
 	$sql = "Insert Into events ( tournamentID, category, date, product, premierEvent, premierGroup, countryName, provinceState, eventJson ) Values ( ";
-	$sql .= $data["tournamentID"] . ", '" . $data["category"] . "', '" . date('Y/m/d', $data["date"]) . "', '" . $data["product"] . "', '";
-	$sql .= $data["premierEvent"] . "', '', '" . $data["countryName"] . "', '" . $data["provinceState"] . "', '";
+	$sql .= $mysqli->real_escape_string($data["tournamentID"]) . ", '" . $mysqli->real_escape_string($data["category"]) . "', '";
+	$sql .= date('Y/m/d', $data["date"]) . "', '" . $mysqli->real_escape_string($data["product"]) . "', '";
+	$sql .= $mysqli->real_escape_string($data["premierEvent"]) . "', '', '" . $mysqli->real_escape_string($data["countryName"]);
+	$sql .= "', '" . $mysqli->real_escape_string($data["provinceState"]) . "', '";
 	$sql .= $mysqli->real_escape_string($json) . "' );";
 	
 	$mysqli->query($sql);
-	echo "";
-	echo "Error: " . $mysqli->error;
-	echo "";
+	echo "\nError: " . $mysqli->error . "\n";
 	$mysqli->close();
 }
 
 // This function deletes tournament IDs in bulk.
-function flushDeletedEventIDs($deletedEventIDs) {
-	if ( count($deletedEventIDs) == 0 ) return;
+function flushDeletedEventIDs($deletedTournamentIDs) {
+	if ( count($deletedTournamentIDs) == 0 ) return;
 	
 	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
-	$data = json_decode($json, true);
-	
-	$sql = "Update events Set deleted = 1 Where tournamentID ( " . implode(",", $deletedEventIDs) . " )";
+	$sql = "Update events Set deleted = 1 Where tournamentID In ( " . implode(",", $deletedTournamentIDs) . " )";
 
 	$mysqli->query($sql);	
 	$mysqli->close();
@@ -297,7 +311,8 @@ function getExpiredTournamentIDs() {
 	
 	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
 	$sql = "Select tournamentID From events Where (Date_Add(lastUpdated, INTERVAL " . $cacheTime . " second) < CURRENT_TIMESTAMP Or ";
-	$sql .= "(Date_Sub(date, INTERVAL 7 day) < CURRENT_DATE And Date_Add(lastUpdated, INTERVAL 86400 second) < CURRENT_TIMESTAMP)) And deleted = 0;";
+	$sql .= "(Date_Sub(date, INTERVAL 7 day) < CURRENT_DATE And Date_Add(lastUpdated, INTERVAL 86400 second) < CURRENT_TIMESTAMP)) And ";
+	$sql .= "deleted = 0 And date >= CURRENT_DATE;";
 	$result = $mysqli->query($sql);
 
 	$tournamentIDs = array();
