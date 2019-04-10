@@ -36,7 +36,7 @@ function buildSearchFilter() {
 
 // Extract all the tournaments matching the specified filters.
 function getFilteredTournamentData($filters) {
-	$sql = "Select tournamentID, eventJson, lastUpdated From events Where 1=1";
+	$sql = "Select tournamentID, eventJson, lastUpdated From events Where deleted = 0";
 	
 	if ( isset($filters["countryName"]) ) {
 		$sql .= " And (1=0";

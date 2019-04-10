@@ -230,6 +230,7 @@ function updateTournamentId($tournamentID) {
 		if ( $eventData["countryName"] ) {
 			echo json_encode($eventData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 			saveToDatabase($json);
+			echo "";
 		}	
 	}
 }
@@ -243,12 +244,15 @@ function saveToDatabase($json) {
 	$sql = "Delete From events Where tournamentID = " . $data["tournamentID"];
 	$mysqli->query($sql);
 	
-	$sql = "Insert Into events ( tournamentID, category, date, product, premierEvent, countryName	, provinceState, eventJson ) Values ( ";
+	$sql = "Insert Into events ( tournamentID, category, date, product, premierEvent, premierGroup, countryName, provinceState, eventJson ) Values ( ";
 	$sql .= $data["tournamentID"] . ", '" . $data["category"] . "', '" . date('Y/m/d', $data["date"]) . "', '" . $data["product"] . "', '";
-	$sql .= $data["premierEvent"] . "', '" . $data["countryName"] . "', '" . $data["provinceState"] . "', '";
+	$sql .= $data["premierEvent"] . "', '', '" . $data["countryName"] . "', '" . $data["provinceState"] . "', '";
 	$sql .= $mysqli->real_escape_string($json) . "' );";
 	
 	$mysqli->query($sql);
+	echo "";
+	echo "Error: " . $mysqli->error;
+	echo "";
 	$mysqli->close();
 }
 
@@ -259,7 +263,7 @@ function flushDeletedEventIDs($deletedEventIDs) {
 	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
 	$data = json_decode($json, true);
 	
-	$sql = "Delete From events Where tournamentID ( " . implode(",", $deletedEventIDs) . " )";
+	$sql = "Update events Set deleted = 1 Where tournamentID ( " . implode(",", $deletedEventIDs) . " )";
 
 	$mysqli->query($sql);	
 	$mysqli->close();
@@ -270,7 +274,7 @@ function flushDeletedEventIDs($deletedEventIDs) {
 // tournaments that occur in the past.
 function getAllCurrentStoredIDs() {
 	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
-	$sql = "Select tournamentID From events Where date >= CURRENT_DATE;";
+	$sql = "Select tournamentID From events Where date >= CURRENT_DATE And deleted = 0;";
 	$result = $mysqli->query($sql);
 	
 	$tournamentIDs = array();
@@ -292,8 +296,8 @@ function getExpiredTournamentIDs() {
 	$cacheTime = 86400 * 7;
 	
 	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
-	$sql = "Select tournamentID From events Where Date_Add(lastUpdated, INTERVAL " . $cacheTime . " second) < CURRENT_TIMESTAMP Or ";
-	$sql .= "(Date_Sub(date, INTERVAL 7 day) < CURRENT_DATE And Date_Add(lastUpdated, INTERVAL 86400 second) < CURRENT_TIMESTAMP);";
+	$sql = "Select tournamentID From events Where (Date_Add(lastUpdated, INTERVAL " . $cacheTime . " second) < CURRENT_TIMESTAMP Or ";
+	$sql .= "(Date_Sub(date, INTERVAL 7 day) < CURRENT_DATE And Date_Add(lastUpdated, INTERVAL 86400 second) < CURRENT_TIMESTAMP)) And deleted = 0;";
 	$result = $mysqli->query($sql);
 
 	$tournamentIDs = array();
