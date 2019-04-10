@@ -13,6 +13,5 @@ define('MAX_PER_RUN', 500);
 define('MAX_MAP_COUNT', 50);
 
 define('TIMEZONE_API_KEY', '');
-define('MAPBOX_TOKEN', '');
 
 ?>

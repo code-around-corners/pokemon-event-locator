@@ -157,15 +157,12 @@ $url = str_replace("display.php", "calendar.php", $_SERVER["HTTP_HOST"] . $_SERV
 
 					<script>
 						$(document).ready(function() {
-							var map<?php echo $tournament["tournamentID"]; ?> = L.map('map<?php echo $tournament["tournamentID"]; ?>').setView([<?php echo $tournament["coordinates"][0]; ?>, <?php echo $tournament["coordinates"][1]; ?>], 16);
+							var map<?php echo $tournament["tournamentID"]; ?> = L.map('map<?php echo $tournament["tournamentID"]; ?>').setView([<?php echo $tournament["coordinates"][0]; ?>, <?php echo $tournament["coordinates"][1]; ?>], 15);
 							
 							var marker<?php echo $tournament["tournamentID"]; ?> = L.marker([<?php echo $tournament["coordinates"][0]; ?>, <?php echo $tournament["coordinates"][1]; ?>]).addTo(map<?php echo $tournament["tournamentID"]; ?>);
 							
-							L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=<?php echo MAPBOX_TOKEN; ?>', {
-							    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-							    maxZoom: 18,
-							    id: 'mapbox.streets',
-							    accessToken: '<?php echo MAPBOX_TOKEN; ?>'
+							L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png?', {
+								attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
 							}).addTo(map<?php echo $tournament["tournamentID"]; ?>);
 						});
 					</script>

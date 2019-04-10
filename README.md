@@ -14,14 +14,15 @@ calendars generated from that site.
 If you want to host this yourself, then follow these steps.
 
 1. Clone the code here on GitHub to your own server.
-2. Register for an account on timezonedb.com to get an API key
+2. Register for an account on timezonedb.com to get an API key. You will need
+   this to determine the correct time zone to use for each event.
 3. Set up a database and run the latest version of the schema file in the
    resources/sql directory to create the base tables used by the tool.
-4. (Optional) Set up a read only user and a read/write user.
+4. Set up a read only user and a read/write user (alternatively just use the one
+   user).
 5. Copy the config.php.sample file in the resources/php directory to config.php
    and set up the necessary values, including your API key
-6. (Optional) Set up a MapBox account to allow maps to be displayed
-5. Set the update.php script to run via a scheduled job at whatever update
+6. Set the update.php script to run via a scheduled job at whatever update
    interval you feel appropriate (I use hourly, there are currently ~2600 events
    on the official site, and at the default of 500 tournaments per run this will
    allow you to populate your database within 6 hours).
