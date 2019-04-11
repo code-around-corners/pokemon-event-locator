@@ -511,7 +511,7 @@ function getEmailContents($tournaments, $filters) {
 						<a href="https://<? echo $url; ?>">Download This Calendar To My Device</a>
 					</div>
 					<div class="col-12 col-sm-4 text-center">
-						<a href="https://<? echo $_SERVER["HTTP_HOST"]; ?>/index.php">Get Another Calendar</a>
+						<a href="https://<? echo $_SERVER["HTTP_HOST"]; ?>/index.php?filters=<? echo base64_encode(json_encode($filter)); ?>">Edit Calendar Filters</a>
 					</div>
 				</div>
 			</div>
@@ -541,7 +541,7 @@ function sendEventEmail($tournaments, $toAddress, $filter) {
 	$subject = "Upcoming Pokemon Events";
 
 	$headers[] = 'MIME-Version: 1.0';
-	$headers[] = 'Content-type: text/html; charset=iso-8859-1';
+	$headers[] = 'Content-type: text/html; charset=UTF-8';
 	$headers[] = 'From: ' . SEND_FROM_NAME . ' <' . SEND_FROM_EMAIL . '>';
 	
 	mail($toAddress, $subject, $emailHtml, implode("\r\n", $headers));
