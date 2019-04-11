@@ -47,8 +47,7 @@ $url = str_replace("display.php", "calendar.php", $_SERVER["HTTP_HOST"] . $_SERV
 	<div class="container p-3">
 		<div class="card border-dark">
 			<div class="card-header text-light bg-danger">	
-				<h1 class="d-none d-sm-none d-md-block">Pokémon Event Locator/Subscription Tool</h1>
-				<h4 class="d-block d-sm-block d-md-none text-center">Pokémon Event Locator/Subscription Tool</h4>
+				<h4 class="text-center text-md-left">Pokémon Event Locator/Subscription Tool</h4>
 			</div>
 			
 			<div class="card-body">
