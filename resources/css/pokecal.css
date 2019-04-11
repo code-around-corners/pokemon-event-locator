@@ -24,3 +24,7 @@ h6 {
 span.select2 {
 	width: 100% !important;
 }
+
+.select2-container {
+	border-color: #ced4da !important;
+}
