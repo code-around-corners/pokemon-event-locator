@@ -25,6 +25,6 @@ span.select2 {
 	width: 100% !important;
 }
 
-.select2-container {
-	border-color: #ced4da !important;
+.select2-selection {
+	border: 1px solid #ced4da !important;
 }
