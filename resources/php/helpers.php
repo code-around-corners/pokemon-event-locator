@@ -5,6 +5,10 @@ define("MINOR_VERSION", 1);
 
 include_once("resources/php/config.php");
 
+// This lets us use the country codes to display the appropriate flag emoji.
+include_once("vendor/peterkahl/php/flagMaster.php");
+use peterkahl\flagMaster\flagMaster;
+
 // This function gets used to standardise the field names from the Pokemon website.
 function camelCase($str, array $noStrip = []) {
     $str = preg_replace('/[^a-z0-9' . implode("", $noStrip) . ']+/i', ' ', $str);
@@ -20,17 +24,23 @@ function camelCase($str, array $noStrip = []) {
 function buildSearchFilter() {
 	$filter = array();
 	
-	if ( isset($_GET["countryName"]) )							$filter["countryName"] = $_GET["countryName"];
-	if ( isset($_GET["provinceState"]) )							$filter["provinceState"] = $_GET["provinceState"];
-	if ( isset($_GET["product"]) )								$filter["product"] = $_GET["product"];
-	if ( isset($_GET["category"]) )								$filter["category"] = $_GET["category"];
-	if ( isset($_GET["premierEvent"]) )							$filter["premierEvent"] = $_GET["premierEvent"];
-	if ( isset($_GET["premierGroup"]) )							$filter["premierGroup"] = $_GET["premierGroup"];
-	if ( isset($_GET["premierOnly"]) )							$filter["premierOnly"] = true;
-	if ( isset($_GET["excludePremier"]) )							$filter["excludePremier"] = true;
-	if ( isset($_GET["showDeleted"]) )							$filter["showDeleted"] = true;
-	if ( isset($_GET["startDate"]) && $_GET["startDate"] != "" )	$filter["startDate"] = $_GET["startDate"];
-	if ( isset($_GET["endDate"]) && $_GET["endDate"] != "" )		$filter["endDate"] = $_GET["endDate"];
+	if ( isset($_POST["filters"] ) ) {
+		$filter = json_decode(base64_decode($_POST["filters"]), true);
+	} else if ( isset($_GET["filters"] ) ) {
+		$filter = json_decode(base64_decode($_GET["filters"]), true);
+	} else {
+		if ( isset($_GET["countryName"]) )							$filter["countryName"] = $_GET["countryName"];
+		if ( isset($_GET["provinceState"]) )							$filter["provinceState"] = $_GET["provinceState"];
+		if ( isset($_GET["product"]) )								$filter["product"] = $_GET["product"];
+		if ( isset($_GET["category"]) )								$filter["category"] = $_GET["category"];
+		if ( isset($_GET["premierEvent"]) )							$filter["premierEvent"] = $_GET["premierEvent"];
+		if ( isset($_GET["premierGroup"]) )							$filter["premierGroup"] = $_GET["premierGroup"];
+		if ( isset($_GET["premierOnly"]) )							$filter["premierOnly"] = true;
+		if ( isset($_GET["excludePremier"]) )							$filter["excludePremier"] = true;
+		if ( isset($_GET["showDeleted"]) )							$filter["showDeleted"] = true;
+		if ( isset($_GET["startDate"]) && $_GET["startDate"] != "" )	$filter["startDate"] = $_GET["startDate"];
+		if ( isset($_GET["endDate"]) && $_GET["endDate"] != "" )		$filter["endDate"] = $_GET["endDate"];
+	}
 	
 	return $filter;
 }
@@ -306,4 +316,233 @@ function getVersionNumber() {
 	return $version;
 }
 
+function outputHtmlHeader($includeSelect2 = true, $includeDatePicker = true, $includeLeaflet = true) {
+	ob_start();
 ?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>Pokémon Event Locator/Subscription Tool</title>
+	
+	<!-- Lock zooming on mobile devices -->
+	<meta name="viewport" content="width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no"/>
+
+	<!-- Site CSS scripts -->
+	<link href="https://<? echo $_SERVER["HTTP_HOST"]; ?>/resources/css/pokecal.css" rel="stylesheet" />
+
+	<!-- Bootstrap CDN -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+
+<?	if ( $includeSelect2 ) { ?>
+	<!-- Select2 CDN -->
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+<?	} ?>
+
+<?	if ( $includeDatePicker ) { ?>
+	<!-- Bootstrap-Datepicker CDN -->
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.min.css" rel="stylesheet" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js"></script>
+<?	} ?>
+
+<?	if ( $includeLeaflet ) { ?>	
+	<!-- Leaflet CDN -->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==" crossorigin=""/>
+	<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js" integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg==" crossorigin=""></script>
+<?	} ?>
+</head>
+<?
+	$htmlHeader = ob_get_contents();
+	ob_end_clean();
+	
+	return $htmlHeader;
+}
+
+function outputFooter() {
+	ob_start();
+?>
+	<div class="text-center text-light small">
+		Developed by <a href="https://www.codearoundcorners.com/">Tim Crockford</a><span class="d-none d-sm-inline"> - </span>
+		<br class="d-block d-sm-none" />
+		Source Code available on <a href="https://github.com/timcrockford/pokemon-event-locator">GitHub</a>
+	</div>
+<?
+	$outputFooter = ob_get_contents();
+	ob_end_clean();
+	
+	return $outputFooter;
+}
+
+// Outputs a tournament in a card format to display online or via email.
+// $renderMaps: 0 = all, 1 = no descriptions, 2 = none
+function outputTournamentCard($tournament, $renderMaps, &$mapCount) {
+	// We're storing the tournament ID as an integer, so we need to convert this back into the correct
+	// format for the Pokemon website.
+	$url = "https://www.pokemon.com/us/play-pokemon/pokemon-events/";
+	$url .= preg_replace("/(..)(..)(......)/", "$1-$2-$3", $tournament["tournamentID"]) . "/";
+	
+	// We check if the event has any details against it. When we have too many events, we'll only show
+	// maps on the events without descriptions.
+	$hasDescription = trim(implode("", $tournament["details"])) != "";			
+
+	// To help identify TCG vs VGC events, we add some extra styling to the card headers, as well as
+	// adding an emoji icon.
+	$headerClass = "";	
+	if ( strpos($tournament["product"], "Trading Card Game") !== false ) {
+		$headerClass = " bg-primary text-light";
+		$emoji = "🎲";
+	} elseif ( strpos($tournament["product"], "Video Game") !== false ) {
+		$headerClass = " bg-success text-light";
+		$emoji = "🎮";
+	}
+
+	$bodyClass = "";
+	$footerClass = "";
+	if ( $tournament["deleted"] ) {
+		$emoji = "🚫";
+		$headerClass = " bg-dark text-light";
+		$bodyClass = " bg-secondary text-light";
+		$footerClass = $headerClass;
+	}
+	
+	// The address is stored across multiple fields, not all of which are required to be entered by
+	// the organiser. To create a reasonable address, we concatenate as many of these together as we
+	// can based on whether they have information in them or not.
+	$address = "";
+	foreach ( array("venueName", "addressLine1", "addressLine2", "city", "provinceState", "countryName", "postalZipCode") as $field ) {
+		if ( isset($tournament[$field]) && $tournament[$field] != "" ) {
+			$address .= $tournament[$field] . ", ";
+		}
+	}
+	$address = preg_replace("/, $/", "", $address);
+	ob_start();
+?>
+	<div class="card border-dark">
+		<div class="card-header<? echo $headerClass; ?>">
+<?		if ( $tournament["premierEvent"] != '' ) { ?>
+			<? echo $emoji; ?> <? echo $tournament["premierEvent"]; ?><br />
+<?		} ?>
+			<? echo flagMaster::emojiFlag($tournament["countryCode"]) ?> <? echo $tournament["tournamentName"]; ?>
+		</div>
+		<div class="card-body<? echo $bodyClass; ?>">
+			<h4 class="card-title"><? echo $tournament["venueName"]; ?></h4>
+<?			if ( $tournament["deleted"] ) { ?>
+			<span class='badge badge-danger badge-pill'>Cancelled</span>
+<?			} ?>
+			<h6 class="card-subtitle mb-2<? echo ($tournament["deleted"] ? "" : " text-muted"); ?>"><? echo date('F jS Y', $tournament["date"]); ?></h6>
+			<p class="card-text">
+				<? echo preg_replace("/<p><\/p>/", "", "<p>" . implode("</p><p>", $tournament["details"]) . "</p>"); ?>
+			</p>
+			🍙 <a target="_blank" class="<? echo $bodyClass; ?>" href="<? echo $url; ?>" class="card-link">View on Pokemon.com</a>
+
+<?			if ( isset($tournament["website"]) ) { ?>
+			<br />
+			🌎 <a target="_blank" class="<? echo $bodyClass; ?>" href="<? echo $tournament["website"]; ?>" class="card-link">Event Website</a>
+<?			} ?>
+
+<?			if ( $renderMaps == 0 || ($mapCount < MAX_MAP_COUNT && ! $hasDescription && $renderMaps == 1 ) ) { ?>
+			<p>
+				<div class="map" id="map<? echo $tournament["tournamentID"]; ?>"></div>
+			</p>
+<?			} else { ?>
+			<br />
+<?			} ?>
+
+			🗺 <a target="_blank" class="<? echo $bodyClass; ?>" href="http://www.google.com/maps/place/<? echo $tournament["coordinates"][0]; ?>,<? echo $tournament["coordinates"][1]; ?>" class="card-link">View on Google Maps</a>
+
+<?					if ( $renderMaps == 0 || ($mapCount < MAX_MAP_COUNT && ! $hasDescription && $renderMaps == 1 ) ) { ?>
+<?						$mapCount++; ?>
+
+			<script>
+				$(document).ready(function() {
+					var map<? echo $tournament["tournamentID"]; ?> = L.map('map<? echo $tournament["tournamentID"]; ?>').setView([<? echo $tournament["coordinates"][0]; ?>, <? echo $tournament["coordinates"][1]; ?>], 15);
+					
+					var marker<? echo $tournament["tournamentID"]; ?> = L.marker([<? echo $tournament["coordinates"][0]; ?>, <? echo $tournament["coordinates"][1]; ?>]).addTo(map<? echo $tournament["tournamentID"]; ?>);
+					
+					L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png?', {
+						attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
+					}).addTo(map<? echo $tournament["tournamentID"]; ?>);
+				});
+			</script>
+<?					} ?>
+
+		</div>
+		<div class="card-footer<? echo $footerClass; ?>">
+			<? echo $address; ?>
+		</div>
+	</div>
+<?php
+	$cardContent = ob_get_contents();
+	ob_end_clean();
+	
+	return $cardContent;
+}
+
+function getEmailContents($tournaments, $filters) {
+	$url = $_SERVER["HTTP_HOST"] . "/display.php?filters=" . base64_encode(json_encode($filters));
+	
+	ob_start();
+	echo outputHtmlHeader(false, false, false);
+?>
+<body>
+	<div class="container p-1 mt-3">
+		<div class="card border-dark mb-3">
+			<div class="card-header text-light bg-danger">	
+				<h4 class="text-center text-md-left">Pokémon Event Locator/Subscription Tool</h4>
+			</div>
+			
+			<div class="card-body">
+				<div class="card-text">
+					Thank you for using this tool to help find your events! Below are all the events that
+					matched the criteria you specified. You can also subscribe to this calendar using the
+					links below, or view it online to get the latest updates.
+				</div>
+			</div>
+
+			<div class="card-footer">
+				<div class="row">
+					<div class="col-12 col-sm-4 text-center">
+						<a href="webcal://<? echo $url; ?>">Subscribe To This Calendar</a>
+					</div>
+					<div class="col-12 col-sm-4 text-center">
+						<a href="https://<? echo $url; ?>">Download This Calendar To My Device</a>
+					</div>
+					<div class="col-12 col-sm-4 text-center">
+						<a href="https://<? echo $_SERVER["HTTP_HOST"]; ?>/index.php">Get Another Calendar</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="card-columns">
+<?
+	$mapCount = 0;
+	foreach ( $tournaments as $tournament ) {
+		echo outputTournamentCard($tournament, 2, $mapCount);
+	}
+?>
+		</div>
+		<? echo outputFooter(); ?>
+	</div>
+</body>
+</html>
+<?
+	$emailContents = ob_get_contents();
+	ob_end_clean();
+	
+	return $emailContents;
+}
+
+function sendEventEmail($tournaments, $toAddress, $filter) {
+	$emailHtml = getEmailContents($tournaments, $filter);
+	
+	$subject = "Upcoming Pokemon Events";
+
+	$headers[] = 'MIME-Version: 1.0';
+	$headers[] = 'Content-type: text/html; charset=iso-8859-1';
+	$headers[] = 'From: ' . SEND_FROM_NAME . ' <' . SEND_FROM_EMAIL . '>';
+	
+	mail($toAddress, $subject, $emailHtml, implode("\r\n", $headers));
+}
