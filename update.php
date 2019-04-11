@@ -217,8 +217,8 @@ function updateTournamentId($tournamentID) {
 				} elseif ( $heading == "details" ) {
 					$content = preg_replace("/<p><\/p>/i", "", $content);
 					$content = preg_replace("/<p>/i", "", $content);
-					$content = preg_replace("/<br[^>]*>/i", " ", $content);
-					$content = preg_replace("/<\/p> */i", "[~lf~]", $content);
+					$content = preg_replace("/<br[^>]*>/i", "[~lf~]", $content);
+					$content = preg_replace("/<\/p> */i", "[~lf~][~lf~]", $content);
 					$content = str_replace("\n", "", $content);
 					$content = str_replace("\r", "", $content);
 					$content = preg_replace("/\[~lf~\]$/", "", $content);
