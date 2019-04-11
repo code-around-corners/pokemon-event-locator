@@ -28,6 +28,7 @@ function buildSearchFilter() {
 	if ( isset($_GET["premierGroup"]) )							$filter["premierGroup"] = $_GET["premierGroup"];
 	if ( isset($_GET["premierOnly"]) )							$filter["premierOnly"] = true;
 	if ( isset($_GET["excludePremier"]) )							$filter["excludePremier"] = true;
+	if ( isset($_GET["showDeleted"]) )							$filter["showDeleted"] = true;
 	if ( isset($_GET["startDate"]) && $_GET["startDate"] != "" )	$filter["startDate"] = $_GET["startDate"];
 	if ( isset($_GET["endDate"]) && $_GET["endDate"] != "" )		$filter["endDate"] = $_GET["endDate"];
 	
@@ -36,7 +37,13 @@ function buildSearchFilter() {
 
 // Extract all the tournaments matching the specified filters.
 function getFilteredTournamentData($filters) {
-	$sql = "Select tournamentID, eventJson, lastUpdated From events Where deleted = 0";
+	$sql = "Select tournamentID, eventJson, lastUpdated, deleted From events Where ";
+
+	if ( isset($filters["showDeleted"]) ) {
+		$sql .= "1=1";
+	} else {
+		$sql .= "deleted = 0";
+	}
 	
 	if ( isset($filters["countryName"]) ) {
 		$sql .= " And (1=0";
@@ -122,6 +129,7 @@ function getFilteredTournamentData($filters) {
 		while ( $tournament = $result->fetch_assoc() ) {
 			$data = json_decode($tournament["eventJson"], true);
 			$data["lastUpdated"] = $tournament["lastUpdated"];
+			$data["deleted"] = $tournament["deleted"] == 1;
 			$tournaments[count($tournaments)] = $data;
 		}
 	}

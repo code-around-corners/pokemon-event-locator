@@ -17,7 +17,9 @@ echo makeCalendarHeader();
 echo makeTimezoneData($tournaments);
 
 foreach($tournaments as $data) {
-	echo convertDataToIcal($data);
+	if ( ! $data["deleted"] ) {
+		echo convertDataToIcal($data);
+	}
 }
 
 echo makeCalendarFooter();

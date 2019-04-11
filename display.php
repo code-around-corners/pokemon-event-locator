@@ -62,9 +62,16 @@ $url = str_replace("display.php", "calendar.php", $_SERVER["HTTP_HOST"] . $_SERV
 					
 <?					if ( $skipMapWithDescriptions ) { ?>
 					<p>
-						As your calendar has more than <?php echo MAX_MAP_COUNT; ?> events on it then only the first 
-						<?php echo MAX_MAP_COUNT; ?> events without a description will display a mini map, however you can
+						As your calendar has more than <? echo MAX_MAP_COUNT; ?> events on it then only the first 
+						<? echo MAX_MAP_COUNT; ?> events without a description will display a mini map, however you can
 						still load a full map on Google Maps.
+					</p>
+<?					} ?>
+
+<?					if ( isset($filter["showDeleted"]) ) { ?>
+					<p>
+						You've opted to show deleted events. These will not show up in your subscribed calendar but are
+						visible on the online display below.
 					</p>
 <?					} ?>
 				</div>
@@ -73,10 +80,10 @@ $url = str_replace("display.php", "calendar.php", $_SERVER["HTTP_HOST"] . $_SERV
 			<div class="card-footer">
 				<div class="row">
 					<div class="col-12 col-sm-4 text-center">
-						<a href="webcal://<?php echo $url; ?>">Subscribe To This Calendar</a>
+						<a href="webcal://<? echo $url; ?>">Subscribe To This Calendar</a>
 					</div>
 					<div class="col-12 col-sm-4 text-center">
-						<a href="https://<?php echo $url; ?>">Download This Calendar To My Device</a>
+						<a href="https://<? echo $url; ?>">Download This Calendar To My Device</a>
 					</div>
 					<div class="col-12 col-sm-4 text-center">
 						<a href="index.php">Get Another Calendar</a>
@@ -103,13 +110,22 @@ $url = str_replace("display.php", "calendar.php", $_SERVER["HTTP_HOST"] . $_SERV
 
 			// To help identify TCG vs VGC events, we add some extra styling to the card headers, as well as
 			// adding an emoji icon.
-			$baseClass = "";			
+			$headerClass = "";	
 			if ( strpos($tournament["product"], "Trading Card Game") !== false ) {
-				$baseClass = " bg-primary text-light";
+				$headerClass = " bg-primary text-light";
 				$emoji = "🎲";
 			} elseif ( strpos($tournament["product"], "Video Game") !== false ) {
-				$baseClass = " bg-success text-light";
+				$headerClass = " bg-success text-light";
 				$emoji = "🎮";
+			}
+
+			$bodyClass = "";
+			$footerClass = "";
+			if ( $tournament["deleted"] ) {
+				$emoji = "🚫";
+				$headerClass = " bg-dark text-light";
+				$bodyClass = " bg-secondary text-light";
+				$footerClass = $headerClass;
 			}
 		
 			// The address is stored across multiple fields, not all of which are required to be entered by
@@ -124,60 +140,65 @@ $url = str_replace("display.php", "calendar.php", $_SERVER["HTTP_HOST"] . $_SERV
 			$address = preg_replace("/, $/", "", $address);			
 ?>
 			<div class="card border-dark">
-				<div class="card-header<?php echo $baseClass; ?>">
+				<div class="card-header<? echo $headerClass; ?>">
 <?				if ( $tournament["premierEvent"] != '' ) { ?>
 					<? echo $emoji; ?> <? echo $tournament["premierEvent"]; ?><br />
 <?				} ?>
-					<?php echo flagMaster::emojiFlag($tournament["countryCode"]) ?> <? echo $tournament["tournamentName"]; ?>
+					<? echo flagMaster::emojiFlag($tournament["countryCode"]) ?> <? echo $tournament["tournamentName"]; ?>
 				</div>
-				<div class="card-body">
-					<h4 class="card-title"><?php echo $tournament["venueName"]; ?></h4>
-					<h6 class="card-subtitle mb-2 text-muted"><?php echo date('F jS Y', $tournament["date"]); ?></h6>
+				<div class="card-body<? echo $bodyClass; ?>">
+					<h4 class="card-title"><? echo $tournament["venueName"]; ?></h4>
+<?					if ( $tournament["deleted"] ) { ?>
+					<span class='badge badge-danger badge-pill'>Cancelled</span>
+<?					} ?>
+					<h6 class="card-subtitle mb-2<? echo ($tournament["deleted"] ? "" : " text-muted"); ?>"><? echo date('F jS Y', $tournament["date"]); ?></h6>
 					<p class="card-text">
-						<?php echo implode("<br /><br />", $tournament["details"]); ?>
+						<? echo implode("<br /><br />", $tournament["details"]); ?>
 					</p>
-					<a target="_blank" href="<?php echo $url; ?>" class="card-link">View on Pokemon.com</a>
+					🍙 <a target="_blank" class="<? echo $bodyClass; ?>" href="<? echo $url; ?>" class="card-link">View on Pokemon.com</a>
 
 <?					if ( isset($tournament["website"]) ) { ?>
-					<a target="_blank" href="<?php echo $tournament["website"]; ?>" class="card-link">Event Website</a>
+					<br />
+					🌎 <a target="_blank" class="<? echo $bodyClass; ?>" href="<? echo $tournament["website"]; ?>" class="card-link">Event Website</a>
 <?					} ?>
 
 <?					if ( ! $skipMapWithDescriptions || ($mapCount < MAX_MAP_COUNT && ! $hasDescription) ) { ?>
 					<p>
-						<div class="map" id="map<?php echo $tournament["tournamentID"]; ?>"></div>
+						<div class="map" id="map<? echo $tournament["tournamentID"]; ?>"></div>
 					</p>
 <?					} else { ?>
 					<br />
 <?					} ?>
 
-					<a target="_blank" href="http://www.google.com/maps/place/<?php echo $tournament["coordinates"][0]; ?>,<?php echo $tournament["coordinates"][1]; ?>" class="card-link">View on Google Maps</a>
+					🗺 <a target="_blank" class="<? echo $bodyClass; ?>" href="http://www.google.com/maps/place/<? echo $tournament["coordinates"][0]; ?>,<? echo $tournament["coordinates"][1]; ?>" class="card-link">View on Google Maps</a>
 
 <?					if ( ! $skipMapWithDescriptions || ($mapCount < MAX_MAP_COUNT && ! $hasDescription) ) { ?>
 <?						$mapCount++; ?>
 
 					<script>
 						$(document).ready(function() {
-							var map<?php echo $tournament["tournamentID"]; ?> = L.map('map<?php echo $tournament["tournamentID"]; ?>').setView([<?php echo $tournament["coordinates"][0]; ?>, <?php echo $tournament["coordinates"][1]; ?>], 15);
+							var map<? echo $tournament["tournamentID"]; ?> = L.map('map<? echo $tournament["tournamentID"]; ?>').setView([<? echo $tournament["coordinates"][0]; ?>, <? echo $tournament["coordinates"][1]; ?>], 15);
 							
-							var marker<?php echo $tournament["tournamentID"]; ?> = L.marker([<?php echo $tournament["coordinates"][0]; ?>, <?php echo $tournament["coordinates"][1]; ?>]).addTo(map<?php echo $tournament["tournamentID"]; ?>);
+							var marker<? echo $tournament["tournamentID"]; ?> = L.marker([<? echo $tournament["coordinates"][0]; ?>, <? echo $tournament["coordinates"][1]; ?>]).addTo(map<? echo $tournament["tournamentID"]; ?>);
 							
 							L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png?', {
 								attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
-							}).addTo(map<?php echo $tournament["tournamentID"]; ?>);
+							}).addTo(map<? echo $tournament["tournamentID"]; ?>);
 						});
 					</script>
 <?					} ?>
 
 				</div>
-				<div class="card-footer">
-					<?php echo $address; ?>
+				<div class="card-footer<? echo $footerClass; ?>">
+					<? echo $address; ?>
 				</div>
 			</div>
 <?		} ?>
 		</div>
 		
 		<div class="text-center text-light small">
-			Developed by <a href="https://www.codearoundcorners.com/">Tim Crockford</a> - 
+			Developed by <a href="https://www.codearoundcorners.com/">Tim Crockford</a><span class="d-none d-sm-inline"> - </span>
+			<br class="d-block d-sm-none" />
 			Source Code available on <a href="https://github.com/timcrockford/pokemon-event-locator">GitHub</a>
 		</div>
 	</div>

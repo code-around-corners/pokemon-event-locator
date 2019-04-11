@@ -126,20 +126,6 @@ $categories = getDistinctList("category");
 								</select>
 							</div>
 						</div>
-				
-						<div class="col-12 col-md-6 col-xl-4">
-							<div class="form-group">
-								<label><b>Select Options:</b></label>
-								<div class="form-check">
-									<input class="form-check-input" type="checkbox" value="" id="premierOnly" name="premierOnly">
-									<label class="form-check-label" for="premierOnly">Only Show Premier Events</label>
-								</div>
-								<div class="form-check">
-									<input class="form-check-input" type="checkbox" value="" id="excludePremier" name="excludePremier">
-									<label class="form-check-label" for="excludePremier">Exclude Premier Events</label>
-								</div>
-							</div>
-						</div>
 					</div>
 				
 					<div class="row">
@@ -155,6 +141,23 @@ $categories = getDistinctList("category");
 								<input class="datepicker form-control" data-date-format="yyyy/mm/dd" id="endDate" name="endDate">
 							</div>
 						</div>
+						<div class="col-12 col-md-6 col-xl-4">
+							<div class="form-group">
+								<label><b>Select Options:</b></label>
+								<div class="form-check">
+									<input class="form-check-input" type="checkbox" value="" id="premierOnly" name="premierOnly">
+									<label class="form-check-label" for="premierOnly">Only Show Premier Events</label>
+								</div>
+								<div class="form-check">
+									<input class="form-check-input" type="checkbox" value="" id="excludePremier" name="excludePremier">
+									<label class="form-check-label" for="excludePremier">Exclude Premier Events</label>
+								</div>
+								<div class="form-check">
+									<input class="form-check-input" type="checkbox" value="" id="showDeleted" name="showDeleted">
+									<label class="form-check-label" for="showDeleted">Show Cancelled Events</label>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			
@@ -165,7 +168,8 @@ $categories = getDistinctList("category");
 		</form>
 		
 		<div class="text-center text-light small">
-			Developed by <a href="https://www.codearoundcorners.com/">Tim Crockford</a> - 
+			Developed by <a href="https://www.codearoundcorners.com/">Tim Crockford</a><span class="d-none d-sm-inline"> - </span>
+			<br class="d-block d-sm-none" />
 			Source Code available on <a href="https://github.com/timcrockford/pokemon-event-locator">GitHub</a>
 		</div>
 	</div>
