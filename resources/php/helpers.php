@@ -29,17 +29,17 @@ function buildSearchFilter() {
 	} else if ( isset($_GET["filters"] ) ) {
 		$filter = json_decode(base64_decode($_GET["filters"]), true);
 	} else {
-		if ( isset($_GET["countryName"]) )							$filter["countryName"] = $_GET["countryName"];
-		if ( isset($_GET["provinceState"]) )							$filter["provinceState"] = $_GET["provinceState"];
-		if ( isset($_GET["product"]) )								$filter["product"] = $_GET["product"];
-		if ( isset($_GET["category"]) )								$filter["category"] = $_GET["category"];
-		if ( isset($_GET["premierEvent"]) )							$filter["premierEvent"] = $_GET["premierEvent"];
-		if ( isset($_GET["premierGroup"]) )							$filter["premierGroup"] = $_GET["premierGroup"];
-		if ( isset($_GET["premierOnly"]) )							$filter["premierOnly"] = true;
-		if ( isset($_GET["excludePremier"]) )							$filter["excludePremier"] = true;
-		if ( isset($_GET["showDeleted"]) )							$filter["showDeleted"] = true;
-		if ( isset($_GET["startDate"]) && $_GET["startDate"] != "" )	$filter["startDate"] = $_GET["startDate"];
-		if ( isset($_GET["endDate"]) && $_GET["endDate"] != "" )		$filter["endDate"] = $_GET["endDate"];
+		if ( isset($_POST["countryName"]) )							$filter["countryName"] = $_POST["countryName"];
+		if ( isset($_POST["provinceState"]) )							$filter["provinceState"] = $_POST["provinceState"];
+		if ( isset($_POST["product"]) )								$filter["product"] = $_POST["product"];
+		if ( isset($_POST["category"]) )								$filter["category"] = $_POST["category"];
+		if ( isset($_POST["premierEvent"]) )							$filter["premierEvent"] = $_POST["premierEvent"];
+		if ( isset($_POST["premierGroup"]) )							$filter["premierGroup"] = $_POST["premierGroup"];
+		if ( isset($_POST["premierOnly"]) )							$filter["premierOnly"] = true;
+		if ( isset($_POST["excludePremier"]) )							$filter["excludePremier"] = true;
+		if ( isset($_POST["showDeleted"]) )							$filter["showDeleted"] = true;
+		if ( isset($_POST["startDate"]) && $_POST["startDate"] != "" )	$filter["startDate"] = $_POST["startDate"];
+		if ( isset($_POST["endDate"]) && $_POST["endDate"] != "" )		$filter["endDate"] = $_POST["endDate"];
 	}
 	
 	return $filter;
@@ -481,8 +481,8 @@ function outputTournamentCard($tournament, $renderMaps, &$mapCount) {
 	return $cardContent;
 }
 
-function getEmailContents($tournaments, $filters) {
-	$url = $_SERVER["HTTP_HOST"] . "/display.php?filters=" . base64_encode(json_encode($filters));
+function getEmailContents($tournaments, $filter) {
+	$url = $_SERVER["HTTP_HOST"] . "/display.php?filters=" . base64_encode(json_encode($filter));
 	
 	ob_start();
 	echo outputHtmlHeader(false, false, false);

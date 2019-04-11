@@ -29,7 +29,7 @@ echo outputHtmlHeader(true, true, false);
 			</div>
 		</div>
 		
-		<form action="/display.php">
+		<form action="/display.php" method="post">
 			<div class="card my-3 border-dark">
 				<div class="card-body">
 					<div class="row">

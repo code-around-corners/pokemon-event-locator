@@ -18,7 +18,7 @@ if ( count($tournaments) > MAX_MAP_COUNT ) {
 
 // The display and calendar scripts take identical GET parameters, so to display the calendar url
 // we just change the script name from display.php to calendar.php.
-$url = str_replace("display.php", "calendar.php", $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]);
+$url = $_SERVER["HTTP_HOST"] . "/display.php?filters=" . base64_encode(json_encode($filter));
 
 echo outputHtmlHeader(false, false, true);
 ?>
@@ -50,7 +50,7 @@ echo outputHtmlHeader(false, false, true);
 <?					} ?>
 				</div>
 			</div>
-<?			if ( ! isset($_POST["toAddress"]) ) { ?>
+
 			<div class="card-footer">
 				<div class="row">
 					<div class="col-12 col-sm-4 text-center">
@@ -64,7 +64,6 @@ echo outputHtmlHeader(false, false, true);
 					</div>
 				</div>
 			</div>
-<?			} ?>
 		</div>
 
 <?		if ( ! isset($_POST["toAddress"]) ) { ?>
