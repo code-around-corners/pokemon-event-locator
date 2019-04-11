@@ -6,8 +6,7 @@ include_once("resources/php/helpers.php");
 // Due to the time this script takes to run, it's not intended to be run directly through
 // the browser, instead it should be called via a cron job using the php cli binary.
 if ( php_sapi_name() != "cli" ) {
-	echo "This script cannot be run via the browser.";
-	return;
+	header("Location: index.php");
 } else {
 	// When we run the update script, we first pull down any new or updates tournaments,
 	// then run our cleansing scripts.
@@ -240,15 +239,42 @@ function updateTournamentId($tournamentID) {
 		$eventData["countryCode"] = $tzData["countryCode"];
 		$eventData["countryName"] = $tzData["countryName"];
 		$eventData["zoneName"] = $tzData["zoneName"];
-	
+		
 		$json = json_encode($eventData, JSON_UNESCAPED_UNICODE);
 		if ( $eventData["countryName"] ) {
-			echo json_encode($eventData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+			// We also cache the timezone data at this point. This means write access is only needed in
+			// this script, which helps prevent people trying to exploit the input form.
+			cacheTimezoneData($tzData["zoneName"]);
+		
+			echo json_encode($eventData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n";
 			saveToDatabase($json);
 		}	
 	} else {
 		flushDeletedEventIDs([$tournamentID]);
 	}
+}
+
+// Uses tzurl.org to create VTIMEZONE blocks.
+function cacheTimezoneData($timezone) {
+	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
+
+	$sql = "Select vTimezone From timezones Where timezone = '" . $timezone . "';";
+	$result = $mysqli->query($sql);
+	$data = null;
+	
+	if ( $result->num_rows == 0 ) {
+		$timezoneData = file_get_contents("http://tzurl.org/zoneinfo-outlook/" . $timezone);	
+		$timezoneData = preg_replace("/^.*BEGIN\:VTIMEZONE/si", "BEGIN:VTIMEZONE", $timezoneData);
+		$timezoneData = preg_replace("/END\:VTIMEZONE.*$/si", "END:VTIMEZONE\r\n", $timezoneData);
+		
+		$sql = "Insert Into timezones ( timezone, vTimezone ) Values ( '" . $timezone . "', '";
+		$sql .= $mysqli->real_escape_string($timezoneData) . "' );";
+		
+		$mysqli->query($sql);
+	}
+	
+	$result->free();
+	$mysqli->close();
 }
 
 // This function saves the actual JSON tournament to the database. It assumes a delete first even
@@ -325,6 +351,45 @@ function getExpiredTournamentIDs() {
 	$mysqli->close();
 	
 	return $tournamentIDs;	
+}
+
+// Handled cleansing of the province names. Seems some countries don't have a standard list
+// available on the Pokemon site and are freeform text.
+function fixProvinces() {
+	$sql = "Update events Set provinceState = Case ";
+	$sql .= "When provinceState = 'Vic' Then 'Victoria' ";
+	$sql .= "When provinceState = 'NSW' Then 'New South Wales' ";
+	$sql .= "When provinceState = 'NT' Then 'Northern Territory' ";
+	$sql .= "When provinceState = 'QLD' Then 'Queensland' ";
+	$sql .= "When provinceState = 'Select a State' Then '' ";
+	$sql .= "When provinceState = 'Tas' Then 'Tasmania' ";
+	$sql .= "When provinceState = 'WA' Then 'Western Australia' ";
+	$sql .= "When provinceState = 'ACT' Then 'Australian Capital Territory' ";
+	$sql .= "Else provinceState End ";
+	$sql .= "Where countryName = 'Australia';";
+
+	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
+	$mysqli->query($sql);
+	$mysqli->close();
+}
+
+// Group premier events into single items. This is helpful when dealing with things like League
+// or Premier Challenges that have a different premier event label every month.
+function addPremierGroups() {
+	$sql = "Update events Set premierGroup = Case ";
+	$sql .= "When premierEvent Like '%Regional%' Then 'Regional Championship' ";
+	$sql .= "When premierEvent Like '%Special%' Then 'Special Championship' ";
+	$sql .= "When premierEvent Like '%Cup%' Then 'League Cup' ";
+	$sql .= "When premierEvent Like '%League%Challenge%' Then 'League Challenge' ";
+	$sql .= "When premierEvent Like '%Premier%Challenge%' Then 'Premier Challenge' ";
+	$sql .= "When premierEvent Like '%Midseason%Showdown%' Then 'Midseason Showdown' ";
+	$sql .= "When premierEvent Like '%Prerelease%' Then 'Prerelease' ";
+	$sql .= "Else '' End ";
+	$sql .= "Where premierEvent <> '';";
+
+	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
+	$mysqli->query($sql);
+	$mysqli->close();
 }
 
 ?>
