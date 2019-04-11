@@ -9,6 +9,8 @@ $premierGroups = getDistinctList("premierGroup");
 $products = getDistinctList("product");
 $categories = getDistinctList("category");
 
+$filter = buildSearchFilter();
+
 echo outputHtmlHeader(true, true, false);
 ?>
 <body>
@@ -136,7 +138,14 @@ echo outputHtmlHeader(true, true, false);
 				</div>
 			
 				<div class="card-footer text-center">
-					<input type="submit" value="Get My Calendar" />
+					<div class="row">
+						<div class="col-12 col-md-6">
+							<input type="submit" value="Get My Calendar" />
+						</div>
+						<div class="col-12 col-md-6">
+							<a href="/index.php">Reset My Selections</a>
+						</div>
+					</div>
 				</div>
 			</div>
 		</form>
@@ -182,6 +191,45 @@ $(document).ready(function() {
 	    });
     });
     
+<?	if ( isset($filter["countryName"]) ) { ?>
+	$("select#countryName").val(['<? echo implode("','", $filter["countryName"]); ?>']);
+	$("select#countryName").trigger("change");
+<?	} ?>
+<?	if ( isset($filter["provinceState"]) ) { ?>
+	$("select#provinceState").val(['<? echo implode("','", $filter["provinceState"]); ?>']);
+	$("select#provinceState").trigger("change");
+<?	} ?>
+<?	if ( isset($filter["premierEvent"]) ) { ?>
+	$("select#premierEvent").val(['<? echo implode("','", $filter["premierEvent"]); ?>']);
+	$("select#premierEvent").trigger("change");
+<?	} ?>
+<?	if ( isset($filter["premierGroup"]) ) { ?>
+	$("select#premierGroup").val(['<? echo implode("','", $filter["premierGroup"]); ?>']);
+	$("select#premierGroup").trigger("change");
+<?	} ?>
+<?	if ( isset($filter["product"]) ) { ?>
+	$("select#product").val(['<? echo implode("','", $filter["product"]); ?>']);
+	$("select#product").trigger("change");
+<?	} ?>
+<?	if ( isset($filter["category"]) ) { ?>
+	$("select#category").val(['<? echo implode("','", $filter["category"]); ?>']);
+	$("select#category").trigger("change");
+<?	} ?>
+<?	if ( isset($filter["startDate"]) ) { ?>
+	$("#startDate").val(['<? echo $filter["startDate"]; ?>']);
+<?	} ?>
+<?	if ( isset($filter["endDate"]) ) { ?>
+	$("#endDate").val(['<? echo $filter["endDate"]; ?>']);
+<?	} ?>
+<?	if ( isset($filter["premierOnly"]) ) { ?>
+	$("#premierOnly").prop("checked", true);
+<?	} ?>
+<?	if ( isset($filter["excludePremier"]) ) { ?>
+	$("#excludePremier").prop("checked", true);
+<?	} ?>
+<?	if ( isset($filter["showDeleted"]) ) { ?>
+	$("#showDeleted").prop("checked", true);
+<?	} ?>
 });
 </script>
 

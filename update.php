@@ -303,7 +303,7 @@ function flushDeletedEventIDs($deletedTournamentIDs) {
 	if ( count($deletedTournamentIDs) == 0 ) return;
 	
 	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
-	$sql = "Update events Set deleted = 1 Where tournamentID In ( " . implode(",", $deletedTournamentIDs) . " )";
+	$sql = "Update events Set deleted = 1 Where tournamentID In ( " . implode(",", $deletedTournamentIDs) . " ) And date > CURRENT_DATE";
 
 	$mysqli->query($sql);	
 	$mysqli->close();
@@ -333,11 +333,11 @@ function getAllCurrentStoredIDs() {
 // less than a week away. This returns all the tournament IDs that meet that criteria to queue them to be
 // refreshed.
 function getExpiredTournamentIDs() {
-	$cacheTime = 86400 * 7;
+	$cacheTime = 86400;
 	
 	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
 	$sql = "Select tournamentID From events Where (Date_Add(lastUpdated, INTERVAL " . $cacheTime . " second) < CURRENT_TIMESTAMP Or ";
-	$sql .= "(Date_Sub(date, INTERVAL 7 day) < CURRENT_DATE And Date_Add(lastUpdated, INTERVAL 86400 second) < CURRENT_TIMESTAMP)) And ";
+	$sql .= "(Date_Sub(date, INTERVAL 7 day) < CURRENT_DATE And Date_Add(lastUpdated, INTERVAL 43200 second) < CURRENT_TIMESTAMP)) And ";
 	$sql .= "deleted = 0 And date >= CURRENT_DATE;";
 	$result = $mysqli->query($sql);
 

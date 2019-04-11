@@ -60,7 +60,7 @@ echo outputHtmlHeader(false, false, true);
 						<a href="https://<? echo $url; ?>">Download This Calendar To My Device</a>
 					</div>
 					<div class="col-12 col-sm-4 text-center">
-						<a href="index.php">Get Another Calendar</a>
+						<a href="index.php?filters=<? echo base64_encode(json_encode($filter)); ?>">Edit Calendar Filters</a>
 					</div>
 				</div>
 			</div>
