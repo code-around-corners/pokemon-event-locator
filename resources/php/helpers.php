@@ -40,6 +40,19 @@ function buildSearchFilter() {
 		if ( isset($_POST["showDeleted"]) )							$filter["showDeleted"] = true;
 		if ( isset($_POST["startDate"]) && $_POST["startDate"] != "" )	$filter["startDate"] = $_POST["startDate"];
 		if ( isset($_POST["endDate"]) && $_POST["endDate"] != "" )		$filter["endDate"] = $_POST["endDate"];
+
+		// We've moved everything to POST now but this will support older subscriptions.
+		if ( isset($_GET["countryName"]) )							$filter["countryName"] = $_GET["countryName"];
+		if ( isset($_GET["provinceState"]) )							$filter["provinceState"] = $_GET["provinceState"];
+		if ( isset($_GET["product"]) )								$filter["product"] = $_GET["product"];
+		if ( isset($_GET["category"]) )								$filter["category"] = $_GET["category"];
+		if ( isset($_GET["premierEvent"]) )							$filter["premierEvent"] = $_GET["premierEvent"];
+		if ( isset($_GET["premierGroup"]) )							$filter["premierGroup"] = $_GET["premierGroup"];
+		if ( isset($_GET["premierOnly"]) )							$filter["premierOnly"] = true;
+		if ( isset($_GET["excludePremier"]) )							$filter["excludePremier"] = true;
+		if ( isset($_GET["showDeleted"]) )							$filter["showDeleted"] = true;
+		if ( isset($_GET["startDate"]) && $_GET["startDate"] != "" )	$filter["startDate"] = $_GET["startDate"];
+		if ( isset($_GET["endDate"]) && $_GET["endDate"] != "" )		$filter["endDate"] = $_GET["endDate"];
 	}
 	
 	return $filter;
@@ -179,7 +192,7 @@ function convertDataToIcal($data) {
 	
 	$url = "https://www.pokemon.com/us/play-pokemon/pokemon-events/" . preg_replace("/(..)(..)(......)/", "$1-$2-$3", $data["tournamentID"]) . "/";
 	$ical .= "URL:" . $url . "\r\n";
-	$ical .= "DESCRIPTION:" . implode("\\n\\n", $data["details"]) . "\r\n";	
+	$ical .= "DESCRIPTION:" . str_replace("\\n\\n\\n\\n", "\\n\\n", implode("\\n\\n", $data["details"])) . "\r\n";	
 	$ical .= "END:VEVENT\r\n";
 	
 	return $ical;

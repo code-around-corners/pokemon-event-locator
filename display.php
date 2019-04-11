@@ -18,7 +18,7 @@ if ( count($tournaments) > MAX_MAP_COUNT ) {
 
 // The display and calendar scripts take identical GET parameters, so to display the calendar url
 // we just change the script name from display.php to calendar.php.
-$url = $_SERVER["HTTP_HOST"] . "/display.php?filters=" . base64_encode(json_encode($filter));
+$url = $_SERVER["HTTP_HOST"] . "/calendar.php?filters=" . base64_encode(json_encode($filter));
 
 echo outputHtmlHeader(false, false, true);
 ?>
@@ -37,14 +37,14 @@ echo outputHtmlHeader(false, false, true);
 					provided by the Pokemon.com website.
 					
 <?					if ( $skipMapWithDescriptions ) { ?>
-					<br />
+					<br /><br />
 					As your calendar has more than <? echo MAX_MAP_COUNT; ?> events on it then only the first 
 					<? echo MAX_MAP_COUNT; ?> events without a description will display a mini map, however you can
 					still load a full map on Google Maps.
 <?					} ?>
 
 <?					if ( isset($filter["showDeleted"]) ) { ?>
-					<br />
+					<br /><br />
 					You've opted to show deleted events. These will not show up in your subscribed calendar but are
 					visible on the online display below.
 <?					} ?>
