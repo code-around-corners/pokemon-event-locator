@@ -13,6 +13,7 @@ define('MAX_PER_RUN', 500);
 define('MAX_MAP_COUNT', 50);
 
 define('TIMEZONE_API_KEY', '');
+define('MAPBOX_API_KEY', '');
 
 define('SEND_FROM_NAME', '');
 define('SEND_FROM_EMAIL', '');

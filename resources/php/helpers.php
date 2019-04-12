@@ -40,8 +40,12 @@ function buildSearchFilter() {
 		if ( isset($_POST["showDeleted"]) )							$filter["showDeleted"] = true;
 		if ( isset($_POST["startDate"]) && $_POST["startDate"] != "" )	$filter["startDate"] = $_POST["startDate"];
 		if ( isset($_POST["endDate"]) && $_POST["endDate"] != "" )		$filter["endDate"] = $_POST["endDate"];
+		if ( isset($_POST["latitude"]) )								$filter["latitude"] = $_POST["latitude"];
+		if ( isset($_POST["longitude"]) )								$filter["longitude"] = $_POST["longitude"];
+		if ( isset($_POST["radius"]) )								$filter["radius"] = $_POST["radius"];
 
-		// We've moved everything to POST now but this will support older subscriptions.
+		// We've moved everything to POST now but this will support older subscriptions. This dataset won't be updated
+		// if new fields are added.
 		if ( isset($_GET["countryName"]) )							$filter["countryName"] = $_GET["countryName"];
 		if ( isset($_GET["provinceState"]) )							$filter["provinceState"] = $_GET["provinceState"];
 		if ( isset($_GET["product"]) )								$filter["product"] = $_GET["product"];
@@ -153,7 +157,22 @@ function getFilteredTournamentData($filters) {
 			$data = json_decode($tournament["eventJson"], true);
 			$data["lastUpdated"] = $tournament["lastUpdated"];
 			$data["deleted"] = $tournament["deleted"] == 1;
-			$tournaments[count($tournaments)] = $data;
+			
+			$distanceCheck = true;
+			
+			if ( $filters["radius"] < 999999 && isset($filters["latitude"]) && isset($filters["longitude"]) ) {
+				if ( $filters["latitude"] != "" && $filters["longitude"] != "" ) {
+					$distance = calcCrow($data["coordinates"][0], $data["coordinates"][1], $filters["latitude"], $filters["longitude"]);
+					
+					if ( $distance > $filters["radius"] ) {
+						$distanceCheck = false;
+					}
+				}
+			}
+			
+			if ( $distanceCheck ) {
+				$tournaments[count($tournaments)] = $data;
+			}
 		}
 	}
 	
@@ -329,7 +348,7 @@ function getVersionNumber() {
 	return $version;
 }
 
-function outputHtmlHeader($includeSelect2 = true, $includeDatePicker = true, $includeLeaflet = true) {
+function outputHtmlHeader($includeSelect2 = false, $includeDatePicker = false, $includeLeaflet = false, $includeLocationPicker = false) {
 	ob_start();
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
@@ -343,10 +362,12 @@ function outputHtmlHeader($includeSelect2 = true, $includeDatePicker = true, $in
 	<!-- Site CSS scripts -->
 	<link href="https://<? echo $_SERVER["HTTP_HOST"]; ?>/resources/css/pokecal.css" rel="stylesheet" />
 
+	<!-- jQuery CDN -->
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>	
+
 	<!-- Bootstrap CDN -->
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 
 <?	if ( $includeSelect2 ) { ?>
@@ -365,6 +386,13 @@ function outputHtmlHeader($includeSelect2 = true, $includeDatePicker = true, $in
 	<!-- Leaflet CDN -->
 	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==" crossorigin=""/>
 	<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js" integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg==" crossorigin=""></script>
+<?	} ?>
+
+<?	if ( $includeLocationPicker ) { ?>
+	<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.js'></script>
+	<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.css' rel='stylesheet' />
+	<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.0.0/mapbox-gl-geocoder.min.js'></script>
+	<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.0.0/mapbox-gl-geocoder.css' type='text/css' />
 <?	} ?>
 </head>
 <?
@@ -559,3 +587,23 @@ function sendEventEmail($tournaments, $toAddress, $filter) {
 	
 	mail($toAddress, $subject, $emailHtml, implode("\r\n", $headers));
 }
+
+function calcCrow($lat1, $lon1, $lat2, $lon2) {
+	$R = 6371; // km
+	$dLat = toRad($lat2 - $lat1);
+	$dLon = toRad($lon2 - $lon1);
+	$lat1 = toRad($lat1);
+	$lat2 = toRad($lat2);
+	
+	$a = sin($dLat / 2) * sin($dLat / 2) + sin($dLon / 2) * sin($dLon / 2) * cos($lat1) * cos($lat2); 
+	$c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+	$d = $R * $c;
+	
+	return $d;
+}
+
+function toRad($Value) {
+    return $Value * pi() / 180;
+}
+
+?>

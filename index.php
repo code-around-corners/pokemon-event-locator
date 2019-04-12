@@ -11,7 +11,7 @@ $categories = getDistinctList("category");
 
 $filter = buildSearchFilter();
 
-echo outputHtmlHeader(true, true, false);
+echo outputHtmlHeader(true, true, false, true);
 ?>
 <body>
 	<div class="container p-3">
@@ -25,6 +25,9 @@ echo outputHtmlHeader(true, true, false);
 					easily for events but you can also subscribe to the calendar, making it really easy to keep up to date with events
 					in your area. Please not that local leagues are not currently supported. You can only filter on a state or province
 					when you have selected a single country.
+					<br /><br />
+					If you want to filter locations to within a certain radius of a location, you can enter the GPS coordinated into
+					the text boxes below, or click the "Search For Coordinates" option to look up an address.
 				</div>
 			</div>
 		</div>
@@ -103,7 +106,39 @@ echo outputHtmlHeader(true, true, false);
 							</div>
 						</div>
 					</div>
-				
+					
+					<div class="row">
+						<div class="col-12 col-md-6 col-xl-4">
+							<div class="form-group">
+								<label for="latitude"><b>Enter Latitude:</b></label>
+								<input class="form-control" id="latitude" name="latitude">
+							</div>
+						</div>
+						<div class="col-12 col-md-6 col-xl-4">
+							<div class="form-group">
+								<label for="longitude"><b>Enter Longitude:</b></label>
+								<input class="form-control" id="longitude" name="longitude">
+							</div>
+						</div>
+						<div class="col-12 col-md-6 col-xl-4">
+							<div class="form-group">
+								<label for="radius"><b>Enter Radius from Coordinates:</b></label>
+								<select class="form-control" id="radius" name="radius" width="100%">
+									<option value=999999>Any</option>
+									<option value=10>10kms / 6mi</option>
+									<option value=25>25kms / 15mi</option>
+									<option value=40>40kms / 25mi</option>
+									<option value=60>60kms / 37mi</option>
+									<option value=100>100kms / 62mi</option>
+									<option value=200>200kms / 124mi</option>
+									<option value=300>300kms / 186mi</option>
+									<option value=400>400kms / 249mi</option>
+									<option value=500>500kms / 311mi</option>
+								</select>
+							</div>
+						</div>
+					</div>
+
 					<div class="row">
 						<div class="col-12 col-md-6 col-xl-4">
 							<div class="form-group">
@@ -139,18 +174,39 @@ echo outputHtmlHeader(true, true, false);
 			
 				<div class="card-footer text-center">
 					<div class="row">
-						<div class="col-12 col-md-6">
+						<div class="col-12 col-md-4">
 							<input type="submit" value="Get My Calendar" />
 						</div>
-						<div class="col-12 col-md-6">
+						<div class="col-12 col-md-4">
+							<a href="javascript:loadLocationPicker();">Search For Coordinates</a>
+						</div>
+						<div class="col-12 col-md-4">
 							<a href="/index.php">Reset My Selections</a>
 						</div>
 					</div>
 				</div>
 			</div>
 		</form>
-		
 		<? echo outputFooter(); ?>
+	</div>
+	<div class="modal" id="locationSelect" tabindex="-1" role="dialog" aria-labelledby="locationSelectLabel" aria-hidden="true">
+		<div class="modal-dialog modal-full modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="locationSelectLabel">Select your starting point</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div id="geocoder" class="geocoder"></div>
+					<div id="map"></div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" id="acceptLocation" data-dismiss="modal" >Use This Location</button>
+				</div>
+			</div>
+		</div>
 	</div>
 </body>
 
@@ -221,6 +277,15 @@ $(document).ready(function() {
 <?	if ( isset($filter["endDate"]) ) { ?>
 	$("#endDate").val(['<? echo $filter["endDate"]; ?>']);
 <?	} ?>
+<?	if ( isset($filter["latitude"]) ) { ?>
+	$("#latitude").val(['<? echo $filter["latitude"]; ?>']);
+<?	} ?>
+<?	if ( isset($filter["longitude"]) ) { ?>
+	$("#longitude").val(['<? echo $filter["longitude"]; ?>']);
+<?	} ?>
+<?	if ( isset($filter["radius"]) ) { ?>
+	$("#radius").val(['<? echo $filter["radius"]; ?>']);
+<?	} ?>
 <?	if ( isset($filter["premierOnly"]) ) { ?>
 	$("#premierOnly").prop("checked", true);
 <?	} ?>
@@ -231,6 +296,47 @@ $(document).ready(function() {
 	$("#showDeleted").prop("checked", true);
 <?	} ?>
 });
+
+var initMapDiv = false;
+
+function loadLocationPicker() {
+	$("#locationSelect").on('shown.bs.modal', function() {
+		if ( ! initMapDiv ) {
+			mapboxgl.accessToken = '<? echo MAPBOX_API_KEY; ?>';
+		
+			var map = new mapboxgl.Map({
+				container: 'map',
+				style: 'mapbox://styles/mapbox/streets-v11',
+				center: [-79.4512, 43.6568],
+				zoom: 13
+			});
+			 
+			var geocoder = new MapboxGeocoder({
+				accessToken: mapboxgl.accessToken,
+				mapboxgl: mapboxgl
+			});
+			
+			document.getElementById('geocoder').appendChild(geocoder.onAdd(map));
+			
+			$("#acceptLocation").click(function() {
+				var latLng = null;
+				
+				if ( geocoder.mapMarker == undefined ) {
+					$("#latitude").val("");
+					$("#longitude").val("");
+				} else {
+					latLng = geocoder.mapMarker.getLngLat();
+					$("#latitude").val(latLng.lat);
+					$("#longitude").val(latLng.lng);
+				}
+			});
+			
+			initMapDiv = true;
+		}
+	});
+
+	$("#locationSelect").modal("show");
+}
 </script>
 
 </html>
