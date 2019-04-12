@@ -91,7 +91,7 @@ echo outputHtmlHeader(false, false, true);
 		$mapCount = 0;
 		
 		foreach ( $tournaments as $tournament ) {
-			echo outputTournamentCard($tournament, ($skipMapWithDescriptions ? 1 : 0), $mapCount);
+			echo outputTournamentCard($tournament, ($skipMapWithDescriptions ? 1 : 0), $mapCount, $filter["useMiles"]);
 		}
 ?>
 		</div>

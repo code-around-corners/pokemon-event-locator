@@ -167,6 +167,10 @@ echo outputHtmlHeader(true, true, false, true);
 									<input class="form-check-input" type="checkbox" value="" id="showDeleted" name="showDeleted">
 									<label class="form-check-label" for="showDeleted">Show Cancelled Events</label>
 								</div>
+								<div class="form-check">
+									<input class="form-check-input" type="checkbox" value="" id="useMiles" name="useMiles">
+									<label class="form-check-label" for="useMiles">Use Miles for Distance</label>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -294,6 +298,9 @@ $(document).ready(function() {
 <?	} ?>
 <?	if ( isset($filter["showDeleted"]) ) { ?>
 	$("#showDeleted").prop("checked", true);
+<?	} ?>
+<?	if ( isset($filter["useMiles"]) ) { ?>
+	$("#useMiles").prop("checked", true);
 <?	} ?>
 });
 

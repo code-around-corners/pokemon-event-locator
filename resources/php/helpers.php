@@ -38,6 +38,7 @@ function buildSearchFilter() {
 		if ( isset($_POST["premierOnly"]) )							$filter["premierOnly"] = true;
 		if ( isset($_POST["excludePremier"]) )							$filter["excludePremier"] = true;
 		if ( isset($_POST["showDeleted"]) )							$filter["showDeleted"] = true;
+		if ( isset($_POST["useMiles"]) )								$filter["useMiles"] = true;
 		if ( isset($_POST["startDate"]) && $_POST["startDate"] != "" )	$filter["startDate"] = $_POST["startDate"];
 		if ( isset($_POST["endDate"]) && $_POST["endDate"] != "" )		$filter["endDate"] = $_POST["endDate"];
 		if ( isset($_POST["latitude"]) )								$filter["latitude"] = $_POST["latitude"];
@@ -163,6 +164,7 @@ function getFilteredTournamentData($filters) {
 			if ( $filters["radius"] < 999999 && isset($filters["latitude"]) && isset($filters["longitude"]) ) {
 				if ( $filters["latitude"] != "" && $filters["longitude"] != "" ) {
 					$distance = calcCrow($data["coordinates"][0], $data["coordinates"][1], $filters["latitude"], $filters["longitude"]);
+					$data["distanceToEvent"] = $distance;
 					
 					if ( $distance > $filters["radius"] ) {
 						$distanceCheck = false;
@@ -419,7 +421,7 @@ function outputFooter() {
 
 // Outputs a tournament in a card format to display online or via email.
 // $renderMaps: 0 = all, 1 = no descriptions, 2 = none
-function outputTournamentCard($tournament, $renderMaps, &$mapCount) {
+function outputTournamentCard($tournament, $renderMaps, &$mapCount, $useMiles) {
 	// We're storing the tournament ID as an integer, so we need to convert this back into the correct
 	// format for the Pokemon website.
 	$url = "https://www.pokemon.com/us/play-pokemon/pokemon-events/";
@@ -466,12 +468,18 @@ function outputTournamentCard($tournament, $renderMaps, &$mapCount) {
 <?		if ( $tournament["premierEvent"] != '' ) { ?>
 			<? echo $emoji; ?> <? echo $tournament["premierEvent"]; ?><br />
 <?		} ?>
-			<? echo flagMaster::emojiFlag($tournament["countryCode"]) ?> <? echo $tournament["tournamentName"]; ?>
+			<? echo flagMaster::emojiFlag($tournament["countryCode"]); ?> <? echo $tournament["tournamentName"]; ?>
 		</div>
 		<div class="card-body<? echo $bodyClass; ?>">
 			<h4 class="card-title"><? echo $tournament["venueName"]; ?></h4>
 <?			if ( $tournament["deleted"] ) { ?>
 			<span class='badge badge-danger badge-pill'>Cancelled</span>
+<?			} ?>
+<?			if ( isset($tournament["distanceToEvent"]) && ! isset($useMiles) ) { ?>
+			<span class='badge badge-secondary badge-pill'>~<? echo round($tournament["distanceToEvent"], 0); ?>kms away</span>
+<?			} ?>
+<?			if ( isset($tournament["distanceToEvent"]) && isset($useMiles) ) { ?>
+			<span class='badge badge-secondary badge-pill'>~<? echo round($tournament["distanceToEvent"] * 0.6214, 0); ?>mi away</span>
 <?			} ?>
 			<h6 class="card-subtitle mb-2<? echo ($tournament["deleted"] ? "" : " text-muted"); ?>"><? echo date('F jS Y', $tournament["date"]); ?></h6>
 			<p class="card-text">
@@ -561,7 +569,7 @@ function getEmailContents($tournaments, $filter) {
 <?
 	$mapCount = 0;
 	foreach ( $tournaments as $tournament ) {
-		echo outputTournamentCard($tournament, 2, $mapCount);
+		echo outputTournamentCard($tournament, 2, $mapCount, $filter["useMiles"]);
 	}
 ?>
 		</div>
