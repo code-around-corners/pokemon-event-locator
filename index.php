@@ -26,8 +26,10 @@ echo outputHtmlHeader(true, true, false, true);
 					in your area. Please not that local leagues are not currently supported. You can only filter on a state or province
 					when you have selected a single country.
 					<br /><br />
-					If you want to filter locations to within a certain radius of a location, you can enter the GPS coordinated into
-					the text boxes below, or click the "Search For Coordinates" option to look up an address.
+					If you want to filter locations to within a certain radius of a location, you can enter the GPS coordinates into
+					the text boxes below, or click the "Search For Coordinates" option to look up an address and populate them
+					automatically. Select "Use Miles for Distance" to have the distance for each event return in miles rather than
+					kilometers.
 				</div>
 			</div>
 		</div>
@@ -135,6 +137,10 @@ echo outputHtmlHeader(true, true, false, true);
 									<option value=400>400kms / 249mi</option>
 									<option value=500>500kms / 311mi</option>
 								</select>
+								<div class="form-check">
+									<input class="form-check-input" type="checkbox" value="" id="useMiles" name="useMiles">
+									<label class="form-check-label" for="useMiles">Use Miles for Distance</label>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -166,10 +172,6 @@ echo outputHtmlHeader(true, true, false, true);
 								<div class="form-check">
 									<input class="form-check-input" type="checkbox" value="" id="showDeleted" name="showDeleted">
 									<label class="form-check-label" for="showDeleted">Show Cancelled Events</label>
-								</div>
-								<div class="form-check">
-									<input class="form-check-input" type="checkbox" value="" id="useMiles" name="useMiles">
-									<label class="form-check-label" for="useMiles">Use Miles for Distance</label>
 								</div>
 							</div>
 						</div>
