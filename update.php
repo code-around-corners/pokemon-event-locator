@@ -394,6 +394,7 @@ function addPremierGroups() {
 	$sql .= "When premierEvent Like '%Special%' Then 'Special Championship' ";
 	$sql .= "When premierEvent Like '%Cup%' Then 'League Cup' ";
 	$sql .= "When premierEvent Like '%League%Challenge%' Then 'League Challenge' ";
+	$sql .= "When premierEvent Like '%TCG%Challenge%' Then 'League Challenge' ";
 	$sql .= "When premierEvent Like '%Premier%Challenge%' Then 'Premier Challenge' ";
 	$sql .= "When premierEvent Like '%Midseason%Showdown%' Then 'Midseason Showdown' ";
 	$sql .= "When premierEvent Like '%Prerelease%' Then 'Prerelease' ";

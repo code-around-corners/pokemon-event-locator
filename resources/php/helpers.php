@@ -372,6 +372,9 @@ function outputHtmlHeader($includeSelect2 = false, $includeDatePicker = false, $
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 
+	<!-- Font Awesome CDN -->
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+
 <?	if ( $includeSelect2 ) { ?>
 	<!-- Select2 CDN -->
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
@@ -436,16 +439,16 @@ function outputTournamentCard($tournament, $renderMaps, &$mapCount, $useMiles) {
 	$headerClass = "";	
 	if ( strpos($tournament["product"], "Trading Card Game") !== false ) {
 		$headerClass = " bg-primary text-light";
-		$emoji = "🎲";
+		$icon = "dice-d20";
 	} elseif ( strpos($tournament["product"], "Video Game") !== false ) {
 		$headerClass = " bg-success text-light";
-		$emoji = "🎮";
+		$icon = "gamepad";
 	}
 
 	$bodyClass = "";
 	$footerClass = "";
 	if ( $tournament["deleted"] ) {
-		$emoji = "🚫";
+		$icon = "ban";
 		$headerClass = " bg-dark text-light";
 		$bodyClass = " bg-secondary text-light";
 		$footerClass = $headerClass;
@@ -466,7 +469,7 @@ function outputTournamentCard($tournament, $renderMaps, &$mapCount, $useMiles) {
 	<div class="card border-dark">
 		<div class="card-header<? echo $headerClass; ?>">
 <?		if ( $tournament["premierEvent"] != '' ) { ?>
-			<? echo $emoji; ?> <? echo $tournament["premierEvent"]; ?><br />
+			<i class="fas fa-<? echo $icon; ?> fa-1x"></i> <? echo $tournament["premierEvent"]; ?><br />
 <?		} ?>
 			<? echo flagMaster::emojiFlag($tournament["countryCode"]); ?> <? echo $tournament["tournamentName"]; ?>
 		</div>
@@ -485,11 +488,11 @@ function outputTournamentCard($tournament, $renderMaps, &$mapCount, $useMiles) {
 			<p class="card-text">
 				<? echo preg_replace("/<p><\/p>/", "", "<p>" . implode("</p><p>", $tournament["details"]) . "</p>"); ?>
 			</p>
-			🍙 <a target="_blank" class="<? echo $bodyClass; ?>" href="<? echo $url; ?>" class="card-link">View on Pokemon.com</a>
+			<i class="fas fa-globe fa-1x"></i> <a target="_blank" class="<? echo $bodyClass; ?>" href="<? echo $url; ?>" class="card-link">View on Pokemon.com</a>
 
 <?			if ( isset($tournament["website"]) ) { ?>
 			<br />
-			🌎 <a target="_blank" class="<? echo $bodyClass; ?>" href="<? echo $tournament["website"]; ?>" class="card-link">Event Website</a>
+			<i class="fas fa-external-link-alt fa-1x"></i> <a target="_blank" class="<? echo $bodyClass; ?>" href="<? echo $tournament["website"]; ?>" class="card-link">Event Website</a>
 <?			} ?>
 
 <?			if ( $renderMaps == 0 || ($mapCount < MAX_MAP_COUNT && ! $hasDescription && $renderMaps == 1 ) ) { ?>
@@ -500,7 +503,7 @@ function outputTournamentCard($tournament, $renderMaps, &$mapCount, $useMiles) {
 			<br />
 <?			} ?>
 
-			🗺 <a target="_blank" class="<? echo $bodyClass; ?>" href="http://www.google.com/maps/place/<? echo $tournament["coordinates"][0]; ?>,<? echo $tournament["coordinates"][1]; ?>" class="card-link">View on Google Maps</a>
+			<i class="fas fa-map-marked-alt fa-1x"></i> <a target="_blank" class="<? echo $bodyClass; ?>" href="http://www.google.com/maps/place/<? echo $tournament["coordinates"][0]; ?>,<? echo $tournament["coordinates"][1]; ?>" class="card-link">View on Google Maps</a>
 
 <?					if ( $renderMaps == 0 || ($mapCount < MAX_MAP_COUNT && ! $hasDescription && $renderMaps == 1 ) ) { ?>
 <?						$mapCount++; ?>
