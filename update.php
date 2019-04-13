@@ -22,15 +22,22 @@ function updateAllTournaments() {
 	$deletedTournamentIDs = getDeletedEventIDs($webTournamentIDs, $dbTournamentIDs);
 	$newTournamentIDs = getNewEventIDs($webTournamentIDs, $dbTournamentIDs);
 	
-	flushDeletedEventIDs($deletedTournamentIDs);
-	$expiredTournamentIDs = getExpiredTournamentIDs();
-	
 	$updatedCount = 0;
 	
 	echo "Found Tournaments on Pokemon.com - " . count($webTournamentIDs) . "\r\n";
 	echo "Expired Tournaments to Refresh - " . count($expiredTournamentIDs) . "\r\n";
 	echo "New Tournaments to Add - " . count($newTournamentIDs) . "\r\n";
-	echo "Cancelled Tournaments to Delete - " . count($deletedTournamentIDs) . " " . implode(",", $deletedTournamentIDs) . "\r\n";
+	echo "Cancelled Tournaments to Delete - " . count($deletedTournamentIDs) . "\r\n";
+
+	// If no tournaments are returned by the site, something went wrong. Do nothing to be safe.
+	if ( count($webTournamentIDs) == 0 ) return;
+	
+	// If we're cancelling more than 10% of the tournaments then chances are something went wrong.
+	// We'll stop here and try again later.
+	if ( count($deletedTournamentIDs) > (0.1 * count($dbTournamentIDs)) ) return;
+
+	flushDeletedEventIDs($deletedTournamentIDs);
+	$expiredTournamentIDs = getExpiredTournamentIDs();
 	
 	foreach ( $expiredTournamentIDs as $tournamentID ) {
 		if ( $updatedCount++ == MAX_PER_RUN ) break;
