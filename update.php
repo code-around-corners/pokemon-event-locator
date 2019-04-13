@@ -133,10 +133,16 @@ function getTournamentIDs($baseSearchUrl, &$tournamentIDs, $pageId) {
 					}
 				}
 				
-				if ( ! $eventCancelled ) {
-					foreach ( $row->getElementsByTagName("a") as $link ) {
-						$tournamentID = preg_replace("/.*([0-9][0-9])\-([0-9][0-9])\-([0-9][0-9][0-9][0-9][0-9][0-9]).*/", "$1$2$3", $link->getAttribute("href"));
+				$tournamentID = null;
+				foreach ( $row->getElementsByTagName("a") as $link ) {
+					$tournamentID = preg_replace("/.*([0-9][0-9])\-([0-9][0-9])\-([0-9][0-9][0-9][0-9][0-9][0-9]).*/", "$1$2$3", $link->getAttribute("href"));
+				}
+
+				if ( $tournamentID ) {
+					if ( ! $eventCancelled ) {
 						$tournamentIDs[count($tournamentIDs)] = $tournamentID;
+					} else {
+						flushDeletedEventIDs([$tournamentID]);
 					}
 				}
 			}			
