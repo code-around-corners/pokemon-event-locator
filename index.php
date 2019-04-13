@@ -18,19 +18,14 @@ echo outputHtmlHeader(true, true, false, true);
 		<form action="/display.php" method="post">
 			<div class="card border-dark">
 				<div class="card-header text-light bg-danger">
-					<h4 class="text-center text-md-left">Pokémon Event Locator/Subscription Tool</h4>
+					<h4 class="text-center text-md-left"><i class="fas fa-calendar-alt fa-1x"></i> Pokémon Event Locator/Subscription Tool</h4>
 				</div>
 				<div class="card-body<? echo isset($_GET["filters"]) ? " d-none" : ""; ?>">
 					<div class="card-text">
 						Find using the official Pokemon.com locator too difficult to use? Try this one instead! Not only can you search
 						easily for events but you can also subscribe to the calendar, making it really easy to keep up to date with events
-						in your area. Please not that local leagues are not currently supported. You can only filter on a state or province
-						when you have selected a single country.
-						<br /><br />
-						If you want to filter locations to within a certain radius of a location, you can enter the GPS coordinates into
-						the text boxes below, or click the "Search For Coordinates" option to look up an address and populate them
-						automatically. Select "Use Miles for Distance" to have the distance for each event return in miles rather than
-						kilometers.
+						in your area. Please not that local leagues are not currently supported. Click Get My Calendar once you're happy
+						with your current selections.
 					</div>
 				</div>
 				<div class="card-footer">
@@ -51,7 +46,7 @@ echo outputHtmlHeader(true, true, false, true);
 					<div class="card-header">
 						<h5 class="mb-0">
 							<a data-toggle="collapse" href="#collapseEvents" aria-expanded="true" aria-controls="collapseEvents">
-								Event Filters
+								<i class="fas fa-filter fa-1x"></i> Event Filters
 								<button type="button" class="close">
 									<span aria-hidden="true"><i class="fas fa-bars fa-1x"></i></span>
 								</button>
@@ -60,6 +55,12 @@ echo outputHtmlHeader(true, true, false, true);
 					</div>
 					<div id="collapseEvents" class="collapse show" role="tabpanel" aria-labelledby="collapseEvents">
 						<div class="card-body">
+							<p>
+								Select the filters you want to use in the dropdown boxes below. You can only select a province or
+								state filter if you have selected a single country. Premier Event Groups allow you to search for all
+								events of a specific type, whereas Premier Event Types are the actual type shown on the official
+								website, and are usually more granular.
+							</p>
 							<div class="row">
 								<div class="col-12 col-md-6 col-xl-4">
 									<div class="form-group">
@@ -138,7 +139,7 @@ echo outputHtmlHeader(true, true, false, true);
 					<div class="card-header">
 						<h5 class="mb-0">
 							<a data-toggle="collapse" class="collapsed" href="#collapseMaps" aria-expanded="false" aria-controls="collapseMaps">
-								Map Location Filters
+								<i class="fas fa-map-marked-alt fa-1x"></i> Map Location Filters
 								<button type="button" class="close">
 									<span aria-hidden="true"><i class="fas fa-bars fa-1x"></i></span>
 								</button>
@@ -147,6 +148,12 @@ echo outputHtmlHeader(true, true, false, true);
 					</div>
 					<div id="collapseMaps" class="collapse" role="tabpanel" aria-labelledby="collapseMaps">
 						<div class="card-body">
+							<p>
+								If you want to filter locations to within a certain radius of a location, you can enter the GPS coordinates into
+								the text boxes below, or click the "Search For Coordinates" option to look up an address and populate them
+								automatically. Select "Use Miles for Distance" to have the distance for each event return in miles rather than
+								kilometers.
+							</p>
 							<div class="row">
 								<div class="col-12 col-md-6 col-xl-4">
 									<div class="form-group">
@@ -193,7 +200,7 @@ echo outputHtmlHeader(true, true, false, true);
 					<div class="card-header">
 						<h5 class="mb-0">
 							<a data-toggle="collapse" class="collapsed" href="#collapseDates" aria-expanded="false" aria-controls="collapseDates">
-								Event Date Filters
+								<i class="fas fa-clock fa-1x"></i> Event Date Filters
 								<button type="button" class="close">
 									<span aria-hidden="true"><i class="fas fa-bars fa-1x"></i></span>
 								</button>
@@ -202,6 +209,12 @@ echo outputHtmlHeader(true, true, false, true);
 					</div>
 					<div id="collapseDates" class="collapse" role="tabpanel" aria-labelledby="collapseMaps">
 						<div class="card-body">
+							<p>
+								Select the date range you want to use when searching for events. This can be in the past, however
+								please note that we have only started collecting events from early April 2019. Alternatively use the
+								Specific Date Range dropdown to prepopulate the date fields with some common date ranges such as IC
+								travel award periods.
+							</p>
 							<div class="row">
 								<div class="col-12 col-md-6 col-xl-3">
 									<div class="form-group">
@@ -254,7 +267,7 @@ echo outputHtmlHeader(true, true, false, true);
 					<div class="card-header">
 						<h5 class="mb-0">
 							<a data-toggle="collapse" class="collapsed" href="#collapseOptions" aria-expanded="false" aria-controls="collapseOptions">
-								Other Filters
+								<i class="fas fa-feather-alt fa-1x"></i> Other Filters
 								<button type="button" class="close">
 									<span aria-hidden="true"><i class="fas fa-bars fa-1x"></i></span>
 								</button>
@@ -263,6 +276,11 @@ echo outputHtmlHeader(true, true, false, true);
 					</div>
 					<div id="collapseOptions" class="collapse" role="tabpanel" aria-labelledby="collapseOptions">
 						<div class="card-body">
+							<p>
+								These toggles allow you to filter your results to specific groups or show events that might
+								otherwise be hidden. Essentially if it doesn't belong to one of the above categories, it'll
+								be here.
+							</p>
 							<div class="row">
 								<div class="col-12 col-md-6 col-xl-4">
 									<div class="form-group">

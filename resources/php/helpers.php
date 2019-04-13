@@ -543,7 +543,7 @@ function getEmailContents($tournaments, $filter) {
 	<div class="container p-1 mt-3">
 		<div class="card border-dark mb-3">
 			<div class="card-header text-light bg-danger">	
-				<h4 class="text-center text-md-left">Pokémon Event Locator/Subscription Tool</h4>
+				<h4 class="text-center text-md-left"><i class="fas fa-calendar-alt fa-1x"></i> Pokémon Event Locator/Subscription Tool</h4>
 			</div>
 			
 			<div class="card-body">
