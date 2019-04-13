@@ -24,7 +24,7 @@ echo outputHtmlHeader(true, true, false, true);
 					<div class="card-text">
 						Find using the official Pokemon.com locator too difficult to use? Try this one instead! Not only can you search
 						easily for events but you can also subscribe to the calendar, making it really easy to keep up to date with events
-						in your area. Please not that local leagues are not currently supported. Click Get My Calendar once you're happy
+						in your area. Please note that local leagues are not currently supported. Click Get My Calendar once you're happy
 						with your current selections.
 					</div>
 				</div>
