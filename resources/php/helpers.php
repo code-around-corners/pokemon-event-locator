@@ -161,7 +161,7 @@ function getFilteredTournamentData($filters) {
 			
 			$distanceCheck = true;
 			
-			if ( $filters["radius"] < 999999 && isset($filters["latitude"]) && isset($filters["longitude"]) ) {
+			if ( isset($filters["latitude"]) && isset($filters["longitude"]) ) {
 				if ( $filters["latitude"] != "" && $filters["longitude"] != "" ) {
 					$distance = calcCrow($data["coordinates"][0], $data["coordinates"][1], $filters["latitude"], $filters["longitude"]);
 					$data["distanceToEvent"] = $distance;
