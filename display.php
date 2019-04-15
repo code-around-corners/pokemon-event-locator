@@ -26,7 +26,14 @@ echo outputHtmlHeader(false, false, true);
 	<div class="container p-3">
 		<div class="card border-dark">
 			<div class="card-header text-light bg-danger">	
-				<h4 class="text-center text-md-left"><i class="fas fa-calendar-alt fa-1x"></i> Pokémon Event Locator/Subscription Tool</h4>
+				<h4 class="text-center text-md-left">
+					<i class="fas fa-calendar-alt fa-1x"></i> Pokémon Event Locator/Subscription Tool
+					<a href="display.php?filters=<? echo base64_encode(json_encode($filter)); ?>">
+						<button type="button" class="close">
+							<span aria-hidden="true"><i class="fas fa-share-square fa-1x"></i></span>
+						</button>
+					</a>
+				</h4>
 			</div>
 			
 			<div class="card-body">
@@ -34,7 +41,8 @@ echo outputHtmlHeader(false, false, true);
 					The link to your calendar is below! Click on the "Subscribe" link to subscribe directly to this
 					calendar or the "Download" link to download the calendar to your device. Or alternatively keep
 					scrolling to view the events online! Please note that the map locations are based on the coordinates
-					provided by the Pokemon.com website.
+					provided by the Pokemon.com website. Click the share icon in the top right to get a URL you can
+					share with others!
 					
 <?					if ( $skipMapWithDescriptions ) { ?>
 					<br /><br />
