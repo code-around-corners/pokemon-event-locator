@@ -6,7 +6,17 @@ include_once("resources/php/helpers.php");
 // Due to the time this script takes to run, it's not intended to be run directly through
 // the browser, instead it should be called via a cron job using the php cli binary.
 if ( php_sapi_name() != "cli" ) {
-	header("Location: index.php");
+	if ( isset($_GET["tournamentId"]) ) {
+		echo "<pre>";
+		foreach(explode(",", $_GET["tournamentId"]) as $tournamentId) {
+			updateTournamentId($tournamentId);
+		}
+		echo "</pre>";
+		fixProvinces();
+		addPremierGroups();
+	} else {
+		header("Location: index.php");
+	}
 } else {
 	// When we run the update script, we first pull down any new or updates tournaments,
 	// then run our cleansing scripts.
@@ -19,58 +29,87 @@ if ( php_sapi_name() != "cli" ) {
 function updateAllTournaments() {
 	$webTournamentIDs = getAllTournamentIDs();
 	$dbTournamentIDs = getAllCurrentStoredIDs();
-	$deletedTournamentIDs = getDeletedEventIDs($webTournamentIDs, $dbTournamentIDs);
 	$newTournamentIDs = getNewEventIDs($webTournamentIDs, $dbTournamentIDs);
+	$suspiciousIDs = getSuspiciousTournamentIDs($webTournamentIDs, $dbTournamentIDs);
+	$expiredTournamentIDs = getExpiredTournamentIDs();
 	
 	$updatedCount = 0;
 	
 	echo "Found Tournaments on Pokemon.com - " . count($webTournamentIDs) . "\r\n";
 	echo "Expired Tournaments to Refresh - " . count($expiredTournamentIDs) . "\r\n";
 	echo "New Tournaments to Add - " . count($newTournamentIDs) . "\r\n";
-	echo "Cancelled Tournaments to Delete - " . count($deletedTournamentIDs) . "\r\n";
-
+	echo "Suspicious Tournaments - " . count($suspiciousIDs) . "\r\n";
+	
 	// If no tournaments are returned by the site, something went wrong. Do nothing to be safe.
 	if ( count($webTournamentIDs) == 0 ) return;
 	
-	// If we're cancelling more than 10% of the tournaments then chances are something went wrong.
-	// We'll stop here and try again later.
-	if ( count($deletedTournamentIDs) > (0.1 * count($dbTournamentIDs)) ) return;
-
-	flushDeletedEventIDs($deletedTournamentIDs);
-	$expiredTournamentIDs = getExpiredTournamentIDs();
-	
 	foreach ( $expiredTournamentIDs as $tournamentID ) {
-		if ( $updatedCount++ == MAX_PER_RUN ) break;
+		$updatedCount++;
+		echo ":: Expired Tournament " . $tournamentID . " (" . $updatedCount . "/" . MAX_PER_RUN . ")\r\n";
 		updateTournamentId($tournamentID);
+		if ( $updatedCount == MAX_PER_RUN ) break;
 	}
 	
 	foreach ( $newTournamentIDs as $tournamentID ) {
-		if ( $updatedCount++ == MAX_PER_RUN ) break;
+		$updatedCount++;
+		echo ":: New Tournament " . $tournamentID . " (" . $updatedCount . "/" . MAX_PER_RUN . ")\r\n";
 		updateTournamentId($tournamentID);
+		if ( $updatedCount == MAX_PER_RUN ) break;
+	}
+
+	foreach ( $suspiciousIDs as $tournamentID ) {
+		$updatedCount++;
+		echo ":: Suspicious Tournament " . $tournamentID . " (" . $updatedCount . "/" . MAX_PER_RUN . ")\r\n";
+		updateTournamentId($tournamentID, true);
+		if ( $updatedCount == MAX_PER_RUN ) break;
 	}
 }
 
-// Compares the list of events on the Pokemon website to the list in the database, and
-// returns any tournament IDs that are no longer on the website (presumably because they've
-// been cancelled).
-function getDeletedEventIDs($webTournamentIDs, $dbTournamentIDs) {
-	$deletedEventIDs = array();
+function getSuspiciousTournamentIDs($webTournamentIDs, $dbTournamentIDs) {
+	$suspiciousIDs = array();
+	$maxTournamentIDs = getMaxTournamentByMonth();
 	
-	foreach ( $dbTournamentIDs as $dbTournamentID ) {
-		$deleted = true;
+	$baseId = date("ym");	
+	$maxBaseId = $baseId;
+	
+	$usedNumbers = array();
+	
+	foreach($webTournamentIDs as $tournamentId) {
+		$usedNumbers[$tournamentId] = true;
 		
-		foreach ( $webTournamentIDs as $webTournamentID ) {
-			if ( $dbTournamentID == $webTournamentID ) {
-				$deleted = false;
-			}
+		if ( substr($tournamentId, 0, 4) > $maxBaseId ) {
+			$maxBaseId = substr($tournamentId, 0, 4);
 		}
+	}
+
+	foreach($dbTournamentIDs as $tournamentId) {
+		$usedNumbers[$tournamentId] = true;
 		
-		if ( $deleted ) {
-			$deletedEventIDs[count($deletedEventIDs)] = $dbTournamentID;
+		if ( substr($tournamentId, 0, 4) > $maxBaseId ) {
+			$maxBaseId = substr($tournamentId, 0, 4);
 		}
 	}
 	
-	return $deletedEventIDs;
+	$emptyMonth = false;
+	
+	for ( $checkBaseId = (int)$baseId; ($checkBaseId <= (int)$maxBaseId) && ! $emptyMonth; $checkBaseId++ ) {
+		if ( isset($maxTournamentIDs[$checkBaseId]) ) {
+			$maxMonthId = $maxTournamentIDs[$checkBaseId];
+			
+			for ( $checkMonthId = 1; $checkMonthId <= (int)$maxMonthId; $checkMonthId++ ) {
+				$checkTournamentId = substr("0000" . $checkBaseId, -4);
+				$checkTournamentId .= substr("000000" . $checkMonthId, -6);
+				
+				if ( ! isset($usedNumbers[$checkTournamentId]) ) {
+					$suspiciousIDs[count($suspiciousIDs)] = $checkTournamentId;
+				}
+			}
+		} else {
+			$emptyMonth = true;
+		}
+	}
+	
+	return $suspiciousIDs;
 }
 
 // Compares the web tournament list with the database one to highlight any tournaments that
@@ -170,13 +209,23 @@ function getTournamentIDs($baseSearchUrl, &$tournamentIDs, $pageId) {
 
 // This will take a tournament ID, download the latest information for that tournament, parse
 // it into JSON format and save it to the database.
-function updateTournamentId($tournamentID) {
+function updateTournamentId($tournamentID, $isHidden = false) {
 	$url = "https://www.pokemon.com/us/play-pokemon/pokemon-events/" . preg_replace("/(..)(..)(......)/", "$1-$2-$3", $tournamentID) . "/";
 	
 	$dom = new DOMDocument;
 	@$dom->loadHTML("<?xml encoding='utf-8' ?>" . file_get_contents($url));
 	
 	$main = $dom->getElementById("mainContent");
+	
+	$blankEvent = array(
+		"tournamentID" => $tournamentID,
+		"category" => "",
+		"date" => 0,
+		"product" => "",
+		"premierEvent" => "",
+		"countryName" => "",
+		"provinceState" => ""
+	);
 	
 	$eventData = array();
 	
@@ -261,9 +310,18 @@ function updateTournamentId($tournamentID) {
 		
 			echo json_encode($eventData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n";
 			saveToDatabase($json);
-		}	
+			
+			return true;
+		} else {
+			return false;
+		}
 	} else {
-		flushDeletedEventIDs([$tournamentID]);
+		if ( $isHidden ) {
+			saveToDatabase(json_encode($blankEvent, JSON_UNESCAPED_UNICODE));
+		}
+		
+		flushDeletedEventIDs([$tournamentID]);	
+		return false;
 	}
 }
 
@@ -307,7 +365,7 @@ function saveToDatabase($json) {
 	$sql .= $mysqli->real_escape_string($json) . "' );";
 	
 	$mysqli->query($sql);
-	echo "\nError: " . $mysqli->error . "\n";
+	echo "Error: " . $mysqli->error . "\n\n";
 	$mysqli->close();
 }
 
@@ -327,7 +385,7 @@ function flushDeletedEventIDs($deletedTournamentIDs) {
 // tournaments that occur in the past.
 function getAllCurrentStoredIDs() {
 	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
-	$sql = "Select tournamentID From events Where date >= CURRENT_DATE And deleted = 0;";
+	$sql = "Select tournamentID From events;";
 	$result = $mysqli->query($sql);
 	
 	$tournamentIDs = array();
@@ -349,9 +407,11 @@ function getExpiredTournamentIDs() {
 	$cacheTime = 86400;
 	
 	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
-	$sql = "Select tournamentID From events Where (((Date_Add(lastUpdated, INTERVAL " . $cacheTime . " second) < CURRENT_TIMESTAMP Or ";
+	$sql = "Select tournamentID From events Where ((((Date_Add(lastUpdated, INTERVAL " . $cacheTime . " second) < CURRENT_TIMESTAMP Or ";
 	$sql .= "(Date_Sub(date, INTERVAL 7 day) < CURRENT_DATE And Date_Add(lastUpdated, INTERVAL 43200 second) < CURRENT_TIMESTAMP)) And ";
-	$sql .= "deleted = 0) Or deleted = 1) And date >= CURRENT_DATE;";
+	$sql .= "deleted = 0) Or deleted = 1) And date >= CURRENT_DATE) Or (date = '1970-01-01' And Date_Add(lastUpdated, INTERVAL ";
+	$sql .= ($cacheTime * 7) . " second) < CURRENT_TIMESTAMP);";
+	
 	$result = $mysqli->query($sql);
 
 	$tournamentIDs = array();
@@ -364,6 +424,26 @@ function getExpiredTournamentIDs() {
 	$mysqli->close();
 	
 	return $tournamentIDs;	
+}
+
+function getMaxTournamentByMonth() {
+	$mysqli = new mysqli(DB_HOST, DB_UPDATE_USER, DB_UPDATE_PASS, DB_NAME);
+
+	$sql = "SELECT Substring(tournamentID, 1, 4) As tournamentMonth, Max(Substring(tournamentID, 5, 6)) As lastTournament ";
+	$sql .= "From events Group By Substring(tournamentID, 1, 4);";
+	
+	$result = $mysqli->query($sql);
+
+	$maxTournamentIDs = array();
+	
+	while ( $tournament = $result->fetch_assoc() ) {
+		$maxTournamentIDs[$tournament["tournamentMonth"]] = $tournament["lastTournament"];
+	}
+	
+	$result->free();
+	$mysqli->close();
+	
+	return $maxTournamentIDs;	
 }
 
 // Handled cleansing of the province names. Seems some countries don't have a standard list
@@ -398,6 +478,7 @@ function addPremierGroups() {
 	$sql .= "When premierEvent Like '%Premier%Challenge%' Then 'Premier Challenge' ";
 	$sql .= "When premierEvent Like '%Midseason%Showdown%' Then 'Midseason Showdown' ";
 	$sql .= "When premierEvent Like '%Prerelease%' Then 'Prerelease' ";
+	$sql .= "When premierEvent Like '%International%' Then 'International Championship' ";
 	$sql .= "Else '' End ";
 	$sql .= "Where premierEvent <> '';";
 
