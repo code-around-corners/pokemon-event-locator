@@ -357,11 +357,12 @@ function saveToDatabase($json) {
 	$sql = "Delete From events Where tournamentID = " . $data["tournamentID"];
 	$mysqli->query($sql);
 	
-	$sql = "Insert Into events ( tournamentID, category, date, product, premierEvent, premierGroup, countryName, provinceState, eventJson ) Values ( ";
+	$sql = "Insert Into events ( tournamentID, category, date, product, premierEvent, premierGroup, countryName, ";
+	$sql .= "provinceState, postalZipCode, eventJson ) Values ( ";
 	$sql .= $mysqli->real_escape_string($data["tournamentID"]) . ", '" . $mysqli->real_escape_string($data["category"]) . "', '";
 	$sql .= date('Y/m/d', $data["date"]) . "', '" . $mysqli->real_escape_string($data["product"]) . "', '";
 	$sql .= $mysqli->real_escape_string($data["premierEvent"]) . "', '', '" . $mysqli->real_escape_string($data["countryName"]);
-	$sql .= "', '" . $mysqli->real_escape_string($data["provinceState"]) . "', '";
+	$sql .= "', '" . $mysqli->real_escape_string($data["provinceState"]) . "', '" . $mysqli->real_escape_string($data["postalZipCode"]) . "', '";
 	$sql .= $mysqli->real_escape_string($json) . "' );";
 	
 	$mysqli->query($sql);
@@ -410,7 +411,7 @@ function getExpiredTournamentIDs() {
 	$sql = "Select tournamentID From events Where ((((Date_Add(lastUpdated, INTERVAL " . $cacheTime . " second) < CURRENT_TIMESTAMP Or ";
 	$sql .= "(Date_Sub(date, INTERVAL 7 day) < CURRENT_DATE And Date_Add(lastUpdated, INTERVAL 43200 second) < CURRENT_TIMESTAMP)) And ";
 	$sql .= "deleted = 0) Or deleted = 1) And date >= CURRENT_DATE) Or (date = '1970-01-01' And Date_Add(lastUpdated, INTERVAL ";
-	$sql .= ($cacheTime * 7) . " second) < CURRENT_TIMESTAMP);";
+	$sql .= ($cacheTime * 3) . " second) < CURRENT_TIMESTAMP);";
 	
 	$result = $mysqli->query($sql);
 

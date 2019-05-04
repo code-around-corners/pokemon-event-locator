@@ -31,6 +31,7 @@ function buildSearchFilter() {
 	} else {
 		if ( isset($_POST["countryName"]) )							$filter["countryName"] = $_POST["countryName"];
 		if ( isset($_POST["provinceState"]) )							$filter["provinceState"] = $_POST["provinceState"];
+		if ( isset($_POST["postalZipCode"]) )							$filter["postalZipCode"] = $_POST["postalZipCode"];
 		if ( isset($_POST["product"]) )								$filter["product"] = $_POST["product"];
 		if ( isset($_POST["category"]) )								$filter["category"] = $_POST["category"];
 		if ( isset($_POST["premierEvent"]) )							$filter["premierEvent"] = $_POST["premierEvent"];
@@ -93,6 +94,16 @@ function getFilteredTournamentData($filters) {
 		$sql .= ")";
 	}
 	
+	if ( isset($filters["postalZipCode"]) ) {
+		$sql .= " And (1=0";
+		
+		foreach($filters["postalZipCode"] as $postalZipCode) {
+			$sql .= " Or postalZipCode = '" . $postalZipCode . "'";
+		}
+		
+		$sql .= ")";
+	}
+
 	if ( isset($filters["product"]) ) {
 		$sql .= " And (1=0";
 		
@@ -332,6 +343,41 @@ function getProvinceList() {
 	return $countryNames;
 }
 
+// Gets a list of all the postcodes by country/province. Used to allow the selection box to filter the list
+// based on the country chosen.
+function getPostalZipCodeList() {
+	$mysqli = new mysqli(DB_HOST, DB_READ_USER, DB_READ_PASS, DB_NAME);
+	$sql = "Select Distinct countryName, provinceState, postalZipCode From events Where countryName <> '' And ";
+	$sql .= "provinceState <> '' And postalZipCode <> '' Order By countryName, provinceState, postalZipCode;";
+	
+	$result = $mysqli->query($sql);
+	
+	$countryNames = array();
+	
+	if ( $result->num_rows > 0 ) {
+		while ( $data = $result->fetch_assoc() ) {
+			$countryName = $data["countryName"];
+			$provinceState = ucwords(strtolower($data["provinceState"]));
+			$postalZipCode = $data["postalZipCode"];
+			
+			if ( ! isset($countryNames[$countryName]) ) {
+				$countryNames[$countryName] = array();
+			}
+			
+			if ( ! isset($countryNames[$countryName][$provinceState]) ) {
+				$countryNames[$countryName][$provinceState] = array();
+			}
+			
+			$countryNames[$countryName][$provinceState][count($countryNames[$countryName][$provinceState])] = $postalZipCode;
+		}
+	}
+	
+	$result->free();
+	$mysqli->close();
+	
+	return $countryNames;
+}
+
 // Simple function to return the current version number of the software, including the latest GitHub
 // reference if available.
 function getVersionNumber() {
@@ -360,6 +406,9 @@ function outputHtmlHeader($includeSelect2 = false, $includeDatePicker = false, $
 	
 	<!-- Lock zooming on mobile devices -->
 	<meta name="viewport" content="width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no"/>
+
+	<meta name="apple-mobile-web-app-title" content="Pokémon Events">
+	<meta name="apple-mobile-web-app-capable" content="yes">
 
 	<!-- Site CSS scripts -->
 	<link href="https://<? echo $_SERVER["HTTP_HOST"]; ?>/resources/css/pokecal.css" rel="stylesheet" />

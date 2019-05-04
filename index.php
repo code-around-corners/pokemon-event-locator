@@ -4,6 +4,7 @@ include_once("resources/php/helpers.php");
 
 $countryNames = getDistinctList("countryName");
 $countryProvinceStates = getProvinceList();
+$countryProvincePostalCodes = getPostalZipCodeList();
 $premierEvents = getDistinctList("premierEvent");
 $premierGroups = getDistinctList("premierGroup");
 $products = getDistinctList("product");
@@ -66,9 +67,9 @@ echo outputHtmlHeader(true, true, false, true);
 									<div class="form-group">
 										<label for="countryName"><b>Select Countries:</b></label>
 										<select class="select2 form-control" id="countryName" name="countryName[]" multiple="multiple" width="100%">
-		<?								foreach($countryNames as $countryName) { ?>
+<?										foreach($countryNames as $countryName) { ?>
 											<option value="<? echo $countryName; ?>"><? echo $countryName; ?></option>
-		<?								} ?>
+<?										} ?>
 										</select>
 									</div>
 								</div>
@@ -77,24 +78,41 @@ echo outputHtmlHeader(true, true, false, true);
 									<div class="form-group">
 										<label for="provinceState"><b>Select Province/States:</b></label>
 										<select class="select2 form-control" id="provinceState" name="provinceState[]" multiple="multiple" width="100%">
-		<?								foreach($countryProvinceStates as $countryName => $provinceStates) { ?>
+<?										foreach($countryProvinceStates as $countryName => $provinceStates) { ?>
 											<optgroup label="<? echo $countryName; ?>">
-		<?									foreach($provinceStates as $provinceState) { ?>
+<?											foreach($provinceStates as $provinceState) { ?>
 												<option value="<? echo $provinceState; ?>"><? echo $provinceState; ?></option>
-		<?									} ?>
+<?											} ?>
 											</optgroup>
-		<?								} ?>
+<?										} ?>
 										</select>
 									</div>
 								</div>
 						
 								<div class="col-12 col-md-6 col-xl-4">
 									<div class="form-group">
+										<label for="postalZipCode"><b>Select Postal/Zip Codes:</b></label>
+										<select class="select2 form-control" id="postalZipCode" name="postalZipCode[]" multiple="multiple" width="100%">
+<?										foreach($countryProvincePostalCodes as $countryName => $provincePostalCodes) { ?>
+<?											foreach($provincePostalCodes as $provinceName => $postalCodes) { ?>
+											<optgroup label="<? echo $countryName . '/' . $provinceName; ?>">
+<?												foreach($postalCodes as $postalZipCode) { ?>
+												<option value="<? echo $postalZipCode; ?>"><? echo $postalZipCode; ?></option>
+<?												} ?>
+											</optgroup>
+<?											} ?>											
+<?										} ?>
+										</select>
+									</div>
+								</div>
+
+								<div class="col-12 col-md-6 col-xl-4">
+									<div class="form-group">
 										<label for="premierGroup"><b>Select Premier Event Group:</b></label>
 										<select class="select2 form-control" id="premierGroup" name="premierGroup[]" multiple="multiple" width="100%">
-		<?								foreach($premierGroups as $premierGroup) { ?>
+<?										foreach($premierGroups as $premierGroup) { ?>
 											<option value="<? echo $premierGroup; ?>"><? echo $premierGroup; ?></option>
-		<?								} ?>
+<?										} ?>
 										</select>
 									</div>
 								</div>
@@ -103,9 +121,9 @@ echo outputHtmlHeader(true, true, false, true);
 									<div class="form-group">
 										<label for="premierEvent"><b>Select Premier Event Type:</b></label>
 										<select class="select2 form-control" id="premierEvent" name="premierEvent[]" multiple="multiple" width="100%">
-		<?								foreach($premierEvents as $premierEvent) { ?>
+<?										foreach($premierEvents as $premierEvent) { ?>
 											<option value="<? echo $premierEvent; ?>"><? echo $premierEvent; ?></option>
-		<?								} ?>
+<?										} ?>
 										</select>
 									</div>
 								</div>
@@ -114,9 +132,9 @@ echo outputHtmlHeader(true, true, false, true);
 									<div class="form-group">
 										<label for="product"><b>Select Game Type:</b></label>
 										<select class="select2 form-control" id="product" name="product[]" multiple="multiple" width="100%">
-		<?								foreach($products as $product) { ?>
+<?										foreach($products as $product) { ?>
 											<option value="<? echo $product; ?>"><? echo $product; ?></option>
-		<?								} ?>
+<?										} ?>
 										</select>
 									</div>
 								</div>
@@ -125,9 +143,9 @@ echo outputHtmlHeader(true, true, false, true);
 									<div class="form-group">
 										<label for="category"><b>Select Game Formats:</b></label>
 										<select class="select2 form-control" id="category" name="category[]" multiple="multiple" width="100%">
-		<?								foreach($categories as $category) { ?>
+<?										foreach($categories as $category) { ?>
 											<option value="<? echo $category; ?>"><? echo $category; ?></option>;
-		<?								} ?>
+<?										} ?>
 										</select>
 									</div>
 								</div>
@@ -312,7 +330,7 @@ echo outputHtmlHeader(true, true, false, true);
 				</div>
 			</div>
 		</form>
-		<? echo outputFooter(); ?>
+<?		 echo outputFooter(); ?>
 	</div>
 	<div class="modal" id="locationSelect" tabindex="-1" role="dialog" aria-labelledby="locationSelectLabel" aria-hidden="true">
 		<div class="modal-dialog modal-full modal-lg" role="document">
@@ -338,12 +356,19 @@ echo outputHtmlHeader(true, true, false, true);
 <script>
 $(document).ready(function() {
 	// Enable Select2 on all our select boxes
-    $("select#countryName").select2();
-    $("select#provinceState").select2();
-    $("select#premierEvent").select2();
-    $("select#premierGroup").select2();
-    $("select#product").select2();
-    $("select#category").select2();
+	var defaultOptions = {
+		placeholder: '',
+		allowClear: true,
+		closeOnSelect: true
+	};
+	
+    $("select#countryName").select2(defaultOptions);
+    $("select#provinceState").select2(defaultOptions);
+    $("select#postalZipCode").select2(defaultOptions);
+    $("select#premierEvent").select2(defaultOptions);
+    $("select#premierGroup").select2(defaultOptions);
+    $("select#product").select2(defaultOptions);
+    $("select#category").select2(defaultOptions);
     
     // Enable Bootstrap-Datepicker on the start and end date pickers
     $("#startDate").datepicker();
@@ -355,19 +380,55 @@ $(document).ready(function() {
 	// Keep a copy of the province list in memory and empty the select box
     provinceStateList = $("select#provinceState optgroup").detach();
     
+    // Keep a copy of the postal/zip code list in memory and empty the select box
+    postalZipCodeList = $("select#postalZipCode optgroup").detach();
+    
     // When we select a single country, we'll populate the province list with the appropriate
     // values for that country, however if no country is selected, or alternatively more than
     // one is selected, we don't want the user to have the ability to select this.
     $("select#countryName").change(function() {
 	    var countryNames = $("select#countryName").val();
 	    
-	    provinceStateList.each(function() {
-		    if ( countryNames == "" || $("select#countryName").val().length > 1 ) {
-			    $("select#provinceState optgroup").detach();
-		    } else {
+	    if ( countryNames == "" || $("select#countryName").val().length > 1 ) {
+		    $("select#provinceState optgroup").detach();
+		    $("select#provinceState").val(null).trigger("change");
+
+		    $("select#postalZipCode optgroup").detach();
+		    $("select#postalZipCode").val(null).trigger("change");
+	    } else {
+		    provinceStateList.each(function() {
 			    if ( countryNames.indexOf($(this).attr("label")) > -1 ) {
 				    $("select#provinceState").append($(this));
 			    }
+		    });
+			
+		    postalZipCodeList.each(function() {
+			    if ( countryNames.indexOf($(this).attr("label").split("/")[0]) > -1 ) {
+				    $("select#postalZipCode").append($(this));
+			    }
+		    });
+		}
+    });
+
+    $("select#provinceState").change(function() {
+	    var countryNames = $("select#countryName").val();
+	    var provinceNames = $("select#provinceState").val();
+	    
+	    $("select#postalZipCode optgroup").detach();
+
+	    postalZipCodeList.each(function() {
+		    for ( countryName in countryNames ) {
+			    if ( provinceNames.length == 0 ) {
+				    if ( countryNames[countryName] == $(this).attr("label").split("/")[0] ) {
+					    $("select#postalZipCode").append($(this));
+				    }					    
+			    } else {
+				    for ( provinceName in provinceNames ) {
+					    if ( $(this).attr("label") == (countryNames[countryName] + "/" + provinceNames[provinceName]) ) {
+						    $("select#postalZipCode").append($(this));
+					    }
+					}
+				}
 		    }
 	    });
     });
@@ -390,6 +451,10 @@ $(document).ready(function() {
 <?	if ( isset($filter["provinceState"]) ) { ?>
 	$("select#provinceState").val(['<? echo implode("','", $filter["provinceState"]); ?>']);
 	$("select#provinceState").trigger("change");
+<?	} ?>
+<?	if ( isset($filter["postalZipCode"]) ) { ?>
+	$("select#postalZipCode").val(['<? echo implode("','", $filter["postalZipCode"]); ?>']);
+	$("select#postalZipCode").trigger("change");
 <?	} ?>
 <?	if ( isset($filter["premierEvent"]) ) { ?>
 	$("select#premierEvent").val(['<? echo implode("','", $filter["premierEvent"]); ?>']);
