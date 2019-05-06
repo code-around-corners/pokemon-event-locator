@@ -8,14 +8,16 @@ iCal subscriptions.
 ## How to use this tool
 
 If you just want to use the tool as is, there is a current version hosted on my
-server at <https://pokecal.codearoundcorners.com/>. You're free to subscribe to
-calendars generated from that site.
+server at <https://www.pokecal.com/>. You're free to subscribe to calendars
+generated from that site.
 
 If you want to host this yourself, then follow these steps.
 
 1. Clone the code here on GitHub to your own server.
 2. Register for an account on timezonedb.com to get an API key. You will need
    this to determine the correct time zone to use for each event.
+3. Register for an API key on mapbox.com, this is needed to support the ability
+   to look up locations for coordinate based searches.
 3. Set up a database and run the latest version of the schema file in the
    resources/sql directory to create the base tables used by the tool.
 4. Set up a read only user and a read/write user (alternatively just use the one
