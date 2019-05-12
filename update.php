@@ -417,8 +417,14 @@ function getExpiredTournamentIDs() {
 
 	$tournamentIDs = array();
 	
+	$startKey = (int)(date("ym")) * 1000000;
+	
 	while ( $tournament = $result->fetch_assoc() ) {
-		$tournamentIDs[count($tournamentIDs)] = $tournament["tournamentID"];
+		$tournamentId = $tournament["tournamentID"];
+		
+		if ( $tournamentId >= $startKey ) {
+			$tournamentIDs[count($tournamentIDs)] = $tournament["tournamentID"];
+		}
 	}
 	
 	$result->free();
