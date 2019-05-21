@@ -18,15 +18,22 @@ if ( php_sapi_name() != "cli" ) {
 		header("Location: index.php");
 	}
 } else {
+	parse_str(implode('&', array_slice($argv, 1)), $_GET);
+
+	$runSuspiciousTournamentsOnly = false;
+	if ( $_GET['suspicious'] == 1 ) {
+		$runSuspiciousTournamentsOnly = true;
+	}
+	
 	// When we run the update script, we first pull down any new or updates tournaments,
 	// then run our cleansing scripts.
-	updateAllTournaments();
+	updateAllTournaments($runSuspiciousTournamentsOnly);
 	fixProvinces();
 	addPremierGroups();
 }
 
 // Updates up to MAX_PER_RUN tournaments in the database.
-function updateAllTournaments() {
+function updateAllTournaments($runSuspiciousTournamentsOnly) {
 	$webTournamentIDs = getAllTournamentIDs();
 	$dbTournamentIDs = getAllCurrentStoredIDs();
 	$newTournamentIDs = getNewEventIDs($webTournamentIDs, $dbTournamentIDs);
@@ -43,25 +50,27 @@ function updateAllTournaments() {
 	// If no tournaments are returned by the site, something went wrong. Do nothing to be safe.
 	if ( count($webTournamentIDs) == 0 ) return;
 	
-	foreach ( $expiredTournamentIDs as $tournamentID ) {
-		$updatedCount++;
-		echo ":: Expired Tournament " . $tournamentID . " (" . $updatedCount . "/" . MAX_PER_RUN . ")\r\n";
-		updateTournamentId($tournamentID);
-		if ( $updatedCount == MAX_PER_RUN ) break;
-	}
-	
-	foreach ( $newTournamentIDs as $tournamentID ) {
-		$updatedCount++;
-		echo ":: New Tournament " . $tournamentID . " (" . $updatedCount . "/" . MAX_PER_RUN . ")\r\n";
-		updateTournamentId($tournamentID);
-		if ( $updatedCount == MAX_PER_RUN ) break;
-	}
-
-	foreach ( $suspiciousIDs as $tournamentID ) {
-		$updatedCount++;
-		echo ":: Suspicious Tournament " . $tournamentID . " (" . $updatedCount . "/" . MAX_PER_RUN . ")\r\n";
-		updateTournamentId($tournamentID, true);
-		if ( $updatedCount == MAX_PER_RUN ) break;
+	if ( ! $runSuspiciousTournamentsOnly ) {
+		foreach ( $expiredTournamentIDs as $tournamentID ) {
+			$updatedCount++;
+			echo ":: Expired Tournament " . $tournamentID . " (" . $updatedCount . "/" . MAX_PER_RUN . ")\r\n";
+			updateTournamentId($tournamentID);
+			if ( $updatedCount == MAX_PER_RUN ) break;
+		}
+		
+		foreach ( $newTournamentIDs as $tournamentID ) {
+			$updatedCount++;
+			echo ":: New Tournament " . $tournamentID . " (" . $updatedCount . "/" . MAX_PER_RUN . ")\r\n";
+			updateTournamentId($tournamentID);
+			if ( $updatedCount == MAX_PER_RUN ) break;
+		}
+	} else {
+		foreach ( $suspiciousIDs as $tournamentID ) {
+			$updatedCount++;
+			echo ":: Suspicious Tournament " . $tournamentID . " (" . $updatedCount . "/" . MAX_PER_RUN . ")\r\n";
+			updateTournamentId($tournamentID, true);
+			if ( $updatedCount == MAX_PER_RUN ) break;
+		}
 	}
 }
 
@@ -316,10 +325,6 @@ function updateTournamentId($tournamentID, $isHidden = false) {
 			return false;
 		}
 	} else {
-		if ( $isHidden ) {
-			saveToDatabase(json_encode($blankEvent, JSON_UNESCAPED_UNICODE));
-		}
-		
 		flushDeletedEventIDs([$tournamentID]);	
 		return false;
 	}
