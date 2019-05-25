@@ -222,7 +222,9 @@ function updateTournamentId($tournamentID, $isHidden = false) {
 	$url = "https://www.pokemon.com/us/play-pokemon/pokemon-events/" . preg_replace("/(..)(..)(......)/", "$1-$2-$3", $tournamentID) . "/";
 	
 	$dom = new DOMDocument;
+	echo "Started download  - " . date("D, d M Y H:i:s") . "\n";
 	@$dom->loadHTML("<?xml encoding='utf-8' ?>" . file_get_contents($url));
+	echo "Finished download - " . date("D, d M Y H:i:s") . "\n";
 	
 	$main = $dom->getElementById("mainContent");
 	
