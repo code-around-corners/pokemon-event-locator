@@ -251,27 +251,35 @@ echo outputHtmlHeader(true, true, false, true);
 										<label for="specificDateRange"><b>Use Specific Date Range:</b></label>
 										<select class="form-control" id="specificDateRange" name="specificDateRange" width="100%">
 											<option value=""></option>
-											<optgroup label="International Championship Travel Awards">
-												<option value="20190218-20190428">2018/19 North American International Championships</option>
-											</optgroup>
 											<optgroup label="World Championships">
+												<option value="20190701-20200630">2020 World Championships</option>
 												<option value="20180709-20190623">2019 World Championships</option>
 											</optgroup>
-											<optgroup label="League Challenge Seasons">
-												<option value="20180709-20181031">2018/19 Season 1</option>
-												<option value="20181101-20190131">2018/19 Season 2</option>
-												<option value="20190201-20190430">2018/19 Season 3</option>
-												<option value="20190501-20190623">2018/19 Season 4</option>																					</optgroup>
-											<optgroup label="League Cup Seasons">
+											<optgroup label="2019/20 League Challenge Seasons">
+												<option value="20190701-20191031">2019/20 Season 1 (Unified Minds)</option>
+											</optgroup>
+											<optgroup label="2019/20 League Cup Seasons">
+												<option value="20190816-20191114">2019/20 Season 1 (Unified Minds)</option>
+											</optgroup>
+											<optgroup label="2018/19 International Championship Travel Awards">
+												<option value="20190218-20190428">2018/19 North American International Championships</option>
+											</optgroup>
+											<optgroup label="2018/19 League Challenge Seasons">
+												<option value="20180709-20181031">2018/19 Season 1 (Celestial Storm)</option>
+												<option value="20181101-20190131">2018/19 Season 2 (Lost Thunder)</option>
+												<option value="20190201-20190430">2018/19 Season 3 (Team Up)</option>
+												<option value="20190501-20190623">2018/19 Season 4 (Unbroken Bonds)</option>
+											</optgroup>
+											<optgroup label="2018/19 League Cup Seasons">
 												<option value="20180709-20181115">2018/19 Season 1 (Celestial Storm)</option>
 												<option value="20181116-20190214">2018/19 Season 2 (Lost Thunder)</option>
 												<option value="20190215-20190516">2018/19 Season 3 (Team Up)</option>
 												<option value="20190517-20190623">2018/19 Season 4 (Unbroken Bonds)</option>	
 											</optgroup>
-											<optgroup label="VGC Series">
-												<option value="20180904-20190107">Sun Series</option>
-												<option value="20190108-20190401">Moon Series</option>
-												<option value="20190402-20190623">Ultra Series</option>
+											<optgroup label="2018/19 VGC Series">
+												<option value="20180904-20190107">2018/19 Sun Series</option>
+												<option value="20190108-20190401">2018/19 Moon Series</option>
+												<option value="20190402-20190623">2018/19 Ultra Series</option>
 											</optgroup>
 										</select>
 									</div>
