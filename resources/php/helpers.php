@@ -66,7 +66,7 @@ function buildSearchFilter() {
 
 // Extract all the tournaments matching the specified filters.
 function getFilteredTournamentData($filters) {
-	$sql = "Select tournamentID, eventJson, lastUpdated, deleted From events Where ";
+	$sql = "Select tournamentID, premierGroup, eventJson, lastUpdated, deleted From events Where ";
 
 	if ( isset($filters["showDeleted"]) ) {
 		$sql .= "1=1";
@@ -169,6 +169,7 @@ function getFilteredTournamentData($filters) {
 			$data = json_decode($tournament["eventJson"], true);
 			$data["lastUpdated"] = $tournament["lastUpdated"];
 			$data["deleted"] = $tournament["deleted"] == 1;
+			$data["premierGroup"] = $tournament["premierGroup"];
 			
 			$distanceCheck = true;
 			
