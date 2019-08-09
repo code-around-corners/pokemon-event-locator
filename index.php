@@ -261,13 +261,13 @@ echo outputHtmlHeader(true, true, false, true);
 											</optgroup>
 											<optgroup label="2019/20 League Cup Seasons">
 												<option value="20190816-20191114">2019/20 Season 1 (Unified Minds)</option>
-												<option value="20191115-20200220">2019/20 Season 2</option>
+												<option value="20191115-20200220">2019/20 Season 2 (Cosmic Eclipse)</option>
 												<option value="20200221-20200514">2019/20 Season 3</option>
 												<option value="20200515-20200628">2019/20 Season 4</option>
 											</optgroup>
 											<optgroup label="2019/20 League Challenge Seasons">
 												<option value="20190701-20191031">2019/20 Season 1 (Unified Minds)</option>
-												<option value="20191101-20200131">2019/20 Season 2</option>
+												<option value="20191101-20200131">2019/20 Season 2 (Cosmic Eclipse)</option>
 												<option value="20200201-20200430">2019/20 Season 3</option>
 												<option value="20200501-20200628">2019/20 Season 4</option>
 											</optgroup>
