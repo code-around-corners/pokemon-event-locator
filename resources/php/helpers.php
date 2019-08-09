@@ -1,7 +1,7 @@
 <?php
 	
 define("MAJOR_VERSION", 3);
-define("MINOR_VERSION", 1);
+define("MINOR_VERSION", 2);
 
 include_once("resources/php/config.php");
 
@@ -62,6 +62,8 @@ function buildSearchFilter() {
 
 // Extract all the tournaments matching the specified filters.
 function getFilteredTournamentData($filters) {
+	$mysqli = new mysqli(DB_HOST, DB_READ_USER, DB_READ_PASS, DB_NAME);
+
 	$sql = "Select tournamentID, premierGroup, eventJson, lastUpdated, deleted From events Where ";
 
 	if ( isset($filters["showDeleted"]) ) {
@@ -74,7 +76,7 @@ function getFilteredTournamentData($filters) {
 		$sql .= " And (1=0";
 		
 		foreach($filters["countryName"] as $countryName) {
-			$sql .= " Or countryName = '" . $countryName . "'";
+			$sql .= " Or countryName = '" . $mysqli->real_escape_string($countryName) . "'";
 		}
 		
 		$sql .= ")";
@@ -84,7 +86,7 @@ function getFilteredTournamentData($filters) {
 		$sql .= " And (1=0";
 		
 		foreach($filters["provinceState"] as $provinceState) {
-			$sql .= " Or provinceState = '" . $provinceState . "'";
+			$sql .= " Or provinceState = '" . $mysqli->real_escape_string($provinceState) . "'";
 		}
 		
 		$sql .= ")";
@@ -94,7 +96,7 @@ function getFilteredTournamentData($filters) {
 		$sql .= " And (1=0";
 		
 		foreach($filters["postalZipCode"] as $postalZipCode) {
-			$sql .= " Or postalZipCode = '" . $postalZipCode . "'";
+			$sql .= " Or postalZipCode = '" . $mysqli->real_escape_string($postalZipCode) . "'";
 		}
 		
 		$sql .= ")";
@@ -104,7 +106,7 @@ function getFilteredTournamentData($filters) {
 		$sql .= " And (1=0";
 		
 		foreach($filters["product"] as $product) {
-			$sql .= " Or product = '" . $product . "'";
+			$sql .= " Or product = '" . $mysqli->real_escape_string($product) . "'";
 		}
 		
 		$sql .= ")";
@@ -114,7 +116,7 @@ function getFilteredTournamentData($filters) {
 		$sql .= " And (1=0";
 		
 		foreach($filters["category"] as $category) {
-			$sql .= " Or category = '" . $category . "'";
+			$sql .= " Or category = '" . $mysqli->real_escape_string($category) . "'";
 		}
 		
 		$sql .= ")";
@@ -124,7 +126,7 @@ function getFilteredTournamentData($filters) {
 		$sql .= " And (1=0";
 		
 		foreach($filters["premierEvent"] as $premierEvent) {
-			$sql .= " Or premierEvent = '" . $premierEvent . "'";
+			$sql .= " Or premierEvent = '" . $mysqli->real_escape_string($premierEvent) . "'";
 		}
 		
 		$sql .= ")";
@@ -134,7 +136,7 @@ function getFilteredTournamentData($filters) {
 		$sql .= " And (1=0";
 		
 		foreach($filters["premierGroup"] as $premierGroup) {
-			$sql .= " Or premierGroup = '" . $premierGroup . "'";
+			$sql .= " Or premierGroup = '" . $mysqli->real_escape_string($premierGroup) . "'";
 		}
 		
 		$sql .= ")";
@@ -147,16 +149,15 @@ function getFilteredTournamentData($filters) {
 	}
 	
 	if ( isset($filters["startDate"]) ) {
-		$sql .= " And date >= '" . $filters["startDate"] . "'";
+		$sql .= " And date >= '" . $mysqli->real_escape_string($filters["startDate"]) . "'";
 	}
 
 	if ( isset($filters["endDate"]) ) {
-		$sql .= " And date <= '" . $filters["endDate"] . "'";
+		$sql .= " And date <= '" . $mysqli->real_escape_string($filters["endDate"]) . "'";
 	}
 	
 	$sql .= " Order By date, tournamentID;";
 	
-	$mysqli = new mysqli(DB_HOST, DB_READ_USER, DB_READ_PASS, DB_NAME);
 	$result = $mysqli->query($sql);
 	$tournaments = array();
 	
@@ -277,7 +278,7 @@ function makeTimezoneData($data) {
 function getTimezoneData($timezone) {
 	$mysqli = new mysqli(DB_HOST, DB_READ_USER, DB_READ_PASS, DB_NAME);
 
-	$sql = "Select vTimezone From timezones Where timezone = '" . $timezone . "';";
+	$sql = "Select vTimezone From timezones Where timezone = '" . $mysqli->real_escape_string($timezone) . "';";
 	$result = $mysqli->query($sql);
 	$data = null;
 	
@@ -294,7 +295,8 @@ function getTimezoneData($timezone) {
 // The data is sorted alphabetically.
 function getDistinctList($fieldName) {
 	$mysqli = new mysqli(DB_HOST, DB_READ_USER, DB_READ_PASS, DB_NAME);
-	$sql = "Select Distinct " . $fieldName . " From events Where " . $fieldName . " <> '' Order By " . $fieldName . ";";
+	$sql = "Select Distinct " . $mysqli->real_escape_string($fieldName) . " From events Where ";
+	$sql .= $mysqli->real_escape_string($fieldName) . " <> '' Order By " . $mysqli->real_escape_string($fieldName) . ";";
 	
 	$result = $mysqli->query($sql);
 	$list = array();
