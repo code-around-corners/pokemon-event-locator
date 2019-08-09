@@ -5,10 +5,6 @@ define("MINOR_VERSION", 1);
 
 include_once("resources/php/config.php");
 
-// This lets us use the country codes to display the appropriate flag emoji.
-include_once("vendor/peterkahl/php/flagMaster.php");
-use peterkahl\flagMaster\flagMaster;
-
 // This function gets used to standardise the field names from the Pokemon website.
 function camelCase($str, array $noStrip = []) {
     $str = preg_replace('/[^a-z0-9' . implode("", $noStrip) . ']+/i', ' ', $str);
@@ -521,7 +517,7 @@ function outputTournamentCard($tournament, $renderMaps, &$mapCount, $useMiles) {
 <?		if ( $tournament["premierEvent"] != '' ) { ?>
 			<i class="fas fa-<? echo $icon; ?> fa-1x"></i> <? echo $tournament["premierEvent"]; ?><br />
 <?		} ?>
-			<? echo flagMaster::emojiFlag($tournament["countryCode"]); ?> <? echo $tournament["tournamentName"]; ?>
+			<? echo getFlagEmoji($tournament["countryCode"]); ?> <? echo $tournament["tournamentName"]; ?>
 		</div>
 		<div class="card-body<? echo $bodyClass; ?>">
 			<h4 class="card-title"><? echo $tournament["venueName"]; ?></h4>
@@ -665,6 +661,19 @@ function calcCrow($lat1, $lon1, $lat2, $lon2) {
 
 function toRad($Value) {
     return $Value * pi() / 180;
+}
+
+function getFlagEmoji($countryCode) {
+	$flagOffset = 0x1F1E6;
+	$asciiOffset = 0x41;
+	
+	$country = strtoupper($countryCode);
+
+	$firstChar = ord(substr($country, 0, 1)) - $asciiOffset + $flagOffset;
+	$secondChar = ord(substr($country, 1, 1)) - $asciiOffset + $flagOffset;
+
+	$flag = mb_chr($firstChar) . mb_chr($secondChar);
+	return $flag;
 }
 
 ?>
