@@ -4,7 +4,8 @@ include_once("resources/php/helpers.php");
 include_once("resources/php/config.php");
 
 const VALID_API_CALLS = array(
-	"listEvents" 		=> "getEventList"
+	"listEvents" 		=> "getEventList",
+	"listPeriods"		=> "getPeriods",
 );
 
 const ISO_2_TO_3 = array(
@@ -73,6 +74,115 @@ function getEventList() {
 		"status"	=> 200,
 		"data"		=> $tournaments
 	];
+}
+
+function getPeriods() {
+	$season = "";
+	$products = array();
+	$premierGroups = array();
+	$onlyFormat = false;
+	
+	$checkCount = 0;
+	
+	if ( isset($_GET["season"]) ) {
+		$season = $_GET["season"];
+		$checkCount++;
+	}
+	
+	if ( isset($_GET["product"]) ) {
+		$products = explode(",", $_GET["product"]);
+		$checkCount++;
+	}
+	
+	if ( isset($_GET["premierGroup"]) ) {
+		$premierGroups = explode(",", $_GET["premierGroup"]);
+		$checkCount++;
+	}
+	
+	if ( isset($_GET["onlyFormat"]) ) {
+		$onlyFormat = true;
+		$checkCount++;
+	}
+	
+	$mysqli = new mysqli(DB_HOST, DB_READ_USER, DB_READ_PASS, DB_NAME);
+
+	$sql = "Select
+		s.season,
+	    s.startDate as seasonStartDate,
+	    s.endDate as seasonEndDate,
+	    p.id as periodId,
+	    p.periodName,
+	    p.startDate as periodStartDate,
+	    p.endDate as periodEndDate,
+	    p.premierGroups,
+	    p.products,
+	    p.isFormatPeriod,
+	    p.isTravelAward
+	From
+		seasons s
+	    	Inner Join periods p
+	        	On s.id = p.seasonId";
+	        	
+	$result = $mysqli->query($sql);
+	$periods = array();
+	
+	if ( $result->num_rows > 0 ) {
+		while ( $period = $result->fetch_assoc() ) {
+			$currentSeason = $period["season"];
+			
+			$matchCount = 0;
+
+			if ( $season == $currentSeason ) {
+				$matchCount++;
+			}
+			
+			$validMatch = false;
+			foreach($products as $product) {
+				if ( stripos($period["products"], $product) !== false ) {
+					$validMatch = true;
+				}	
+			}
+			if ( $validMatch ) $matchCount++;
+			
+			$validMatch = false;
+			foreach($premierGroups as $premierGroup) {
+				if ( stripos($period["premierGroup"], $premierGroup) !== false ) {
+					$validMatch = true;
+				}	
+			}
+			if ( $validMatch ) $matchCount++;
+			
+			if ( $onlyFormat && $period["isFormatPeriod"] ) {
+				$matchCount++;
+			}
+			
+			if ( $matchCount == $checkCount ) {
+				if ( ! isset($periods[$currentSeason]) ) {
+					$periods[$currentSeason] = array(
+						"startDate"		=> $period["seasonStartDate"],
+						"endDate"		=> $period["seasonEndDate"],
+						"periods"		=> array()
+					);
+				}
+				
+				$periods[$currentSeason]["periods"][$period["periodId"]] = array(
+					"name"				=> $period["periodName"],
+					"startDate"			=> $period["periodStartDate"],
+					"endDate"			=> $period["periodEndDate"],
+					"products"			=> json_decode($period["products"], true),
+					"premierGroups"		=> json_decode($period["premierGroups"], true),
+					"isTravelAward"		=> $period["isTravelAward"],
+					"isFormatPeriod"	=> $period["isFormatPeriod"]
+				);
+			}
+		}
+	}
+	
+	return [
+		"result"	=> "success",
+		"status"	=> 200,
+		"data"		=> $periods
+	];	
 }
 
 ?>

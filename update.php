@@ -484,6 +484,7 @@ function fixProvinces() {
 // or Premier Challenges that have a different premier event label every month.
 function addPremierGroups() {
 	$sql = "Update events Set premierGroup = Case ";
+ 	$sql .= "When premierEvent Like '%World%' Then 'World Championship' ";
 	$sql .= "When premierEvent Like '%Regional%' Then 'Regional Championship' ";
 	$sql .= "When premierEvent Like '%Special%' Then 'Special Championship' ";
 	$sql .= "When premierEvent Like '%Cup%' Then 'League Cup' ";

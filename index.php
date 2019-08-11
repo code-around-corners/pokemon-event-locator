@@ -12,6 +12,85 @@ $categories = getDistinctList("category");
 
 $filter = buildSearchFilter();
 
+$baseUrl = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+$dateRanges = json_decode(file_get_contents($baseUrl . "/api.php?command=listPeriods"), true);
+$currentSeason = 0;
+
+$dateArray = array(
+	"travelAwards"	=> array(),
+	"formatPeriods"	=> array(
+		"vgc"		=> array(),
+		"tcg"		=> array(),
+		"shared"	=> array()
+	)
+);
+
+foreach($dateRanges["data"] as $season => $seasonData) {
+	if ( $season > $currentSeason ) $currentSeason = $season;
+}
+
+$seasonStart = $dateRanges["data"][$currentSeason]["startDate"];
+$seasonEnd = $dateRanges["data"][$currentSeason]["endDate"];
+
+foreach($dateRanges["data"][$currentSeason]["periods"] as $periodId => $period) {
+	$arrayId = $period["startDate"] . "-" . $periodId;
+	
+	if ( $period["isTravelAward"] ) {
+		$dateArray["travelAwards"][$arrayId] = $period;
+	} else if ( $period["isFormatPeriod"] ) {
+		$isTcg = stripos(implode(",", $period["products"]), "Trading Card Game") !== false;
+		$isVgc = stripos(implode(",", $period["products"]), "Video Game") !== false;
+		
+		$premierGroups = implode("/", $period["premierGroups"]);
+		if ( $premierGroups == "" ) {
+			$premierGroups = "All Events";
+		} else {
+			$premierGroups .= "s";
+		}
+		
+		$label = "";
+		
+		if ( $isTcg && $isVgc ) {
+		} elseif ( $isTcg ) {
+			$label = "TCG";
+		} elseif ( $isVgc ) {
+			$label = "VGC";
+		}
+		
+		$label .= " " . $premierGroups;
+		$dateArray["formatPeriods"][$label][$arrayId] = $period;
+	}
+}
+
+$groupData = "<optgroup label='(" . $currentSeason . ") Travel Award Periods'>\n";
+$groupData .= "<option value='" . str_replace("-", "", $seasonStart) . "-" . str_replace("-", "", $seasonEnd) . "'>World Championships</option>";
+
+foreach($dateArray["travelAwards"] as $arrayId => $period) {
+	$groupData .= "<option value='" . str_replace("-", "", $period["startDate"]) . "-" . str_replace("-", "", $period["endDate"]) . "'>";
+	$groupData .= $period["name"] . "</option>\n";
+}
+
+$groupData .= "</optgroup>\n";
+
+foreach($dateArray["formatPeriods"] as $label => $periods) {
+	if ( count($periods) > 0 ) {
+		$groupData .= "<optgroup label='(" . $currentSeason . ") " . $label . "'>\n";
+		
+		foreach($periods as $period) {
+			$groupData .= "<option value='" . str_replace("-", "", $period["startDate"]) . "-" . str_replace("-", "", $period["endDate"]) . "'>";
+			$groupData .= $period["name"] . "</option>\n";
+		}
+		
+		$groupData .= "</optgroup>\n";
+	}
+}
+
+$day = date('w');
+$weekStart = date("Y-m-d", strtotime("-" . $day . " days"));
+
+$filterStart = date("Ymd", strtotime($weekStart . " + 5 days"));
+$filterEnd = date("Ymd", strtotime($weekStart . " + 7 days"));
+
 echo outputHtmlHeader(true, true, false, true);
 ?>
 <body>
@@ -250,47 +329,9 @@ echo outputHtmlHeader(true, true, false, true);
 									<div class="form-group">
 										<label for="specificDateRange"><b>Use Specific Date Range:</b></label>
 										<select class="form-control" id="specificDateRange" name="specificDateRange" width="100%">
-											<option value=""></option>
-											<optgroup label="World Championships">
-												<option value="20190701-20200630">2020 World Championships</option>
-												<option value="20180709-20190623">2019 World Championships</option>
-											</optgroup>
-											<optgroup label="2019/20 International Championship Travel Awards">
-												<option value="20190429-20190623">2019/20 Latin American International Championships</option>
-												<option value="20190701-20191117">2019/20 Oceania International Championships</option>
-											</optgroup>
-											<optgroup label="2019/20 League Cup Seasons">
-												<option value="20190816-20191114">2019/20 Season 1 (Unified Minds)</option>
-												<option value="20191115-20200220">2019/20 Season 2 (Cosmic Eclipse)</option>
-												<option value="20200221-20200514">2019/20 Season 3</option>
-												<option value="20200515-20200628">2019/20 Season 4</option>
-											</optgroup>
-											<optgroup label="2019/20 League Challenge Seasons">
-												<option value="20190701-20191031">2019/20 Season 1 (Unified Minds)</option>
-												<option value="20191101-20200131">2019/20 Season 2 (Cosmic Eclipse)</option>
-												<option value="20200201-20200430">2019/20 Season 3</option>
-												<option value="20200501-20200628">2019/20 Season 4</option>
-											</optgroup>
-											<optgroup label="2018/19 International Championship Travel Awards">
-												<option value="20190218-20190428">2018/19 North American International Championships</option>
-											</optgroup>
-											<optgroup label="2018/19 League Cup Seasons">
-												<option value="20180709-20181115">2018/19 Season 1 (Celestial Storm)</option>
-												<option value="20181116-20190214">2018/19 Season 2 (Lost Thunder)</option>
-												<option value="20190215-20190516">2018/19 Season 3 (Team Up)</option>
-												<option value="20190517-20190623">2018/19 Season 4 (Unbroken Bonds)</option>	
-											</optgroup>
-											<optgroup label="2018/19 League Challenge Seasons">
-												<option value="20180709-20181031">2018/19 Season 1 (Celestial Storm)</option>
-												<option value="20181101-20190131">2018/19 Season 2 (Lost Thunder)</option>
-												<option value="20190201-20190430">2018/19 Season 3 (Team Up)</option>
-												<option value="20190501-20190623">2018/19 Season 4 (Unbroken Bonds)</option>
-											</optgroup>
-											<optgroup label="2018/19 VGC Series">
-												<option value="20180904-20190107">2018/19 Sun Series</option>
-												<option value="20190108-20190401">2018/19 Moon Series</option>
-												<option value="20190402-20190623">2018/19 Ultra Series</option>
-											</optgroup>
+											<option value="-"></option>
+											<option value="<? echo $filterStart . "-" . $filterEnd; ?>">This Weekend</option>
+											<? echo $groupData; ?>
 										</select>
 									</div>
 								</div>
