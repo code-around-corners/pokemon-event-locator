@@ -6,7 +6,7 @@ $countryNames = getDistinctList("countryName");
 $countryProvinceStates = getProvinceList();
 $countryProvincePostalCodes = getPostalZipCodeList();
 $premierEvents = getDistinctList("premierEvent");
-$premierGroups = getDistinctList("premierGroup");
+$premierGroupsList = getDistinctList("premierGroup");
 $products = getDistinctList("product");
 $categories = getDistinctList("category");
 
@@ -189,7 +189,7 @@ echo outputHtmlHeader(true, true, false, true);
 									<div class="form-group">
 										<label for="premierGroup"><b>Select Premier Event Group:</b></label>
 										<select class="select2 form-control" id="premierGroup" name="premierGroup[]" multiple="multiple" width="100%">
-<?										foreach($premierGroups as $premierGroup) { ?>
+<?										foreach($premierGroupsList as $premierGroup) { ?>
 											<option value="<? echo $premierGroup; ?>"><? echo $premierGroup; ?></option>
 <?										} ?>
 										</select>
