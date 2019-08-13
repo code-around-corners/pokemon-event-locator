@@ -24,6 +24,23 @@ function buildSearchFilter() {
 		$filter = json_decode(base64_decode($_POST["filters"]), true);
 	} else if ( isset($_GET["filters"] ) ) {
 		$filter = json_decode(base64_decode($_GET["filters"]), true);
+	} else {
+		if ( isset($_POST["countryName"]) )								$filter["countryName"] = $_POST["countryName"];
+		if ( isset($_POST["provinceState"]) )							$filter["provinceState"] = $_POST["provinceState"];
+		if ( isset($_POST["postalZipCode"]) )							$filter["postalZipCode"] = $_POST["postalZipCode"];
+		if ( isset($_POST["product"]) )									$filter["product"] = $_POST["product"];
+		if ( isset($_POST["category"]) )								$filter["category"] = $_POST["category"];
+		if ( isset($_POST["premierEvent"]) )							$filter["premierEvent"] = $_POST["premierEvent"];
+		if ( isset($_POST["premierGroup"]) )							$filter["premierGroup"] = $_POST["premierGroup"];
+		if ( isset($_POST["premierOnly"]) )								$filter["premierOnly"] = true;
+		if ( isset($_POST["excludePremier"]) )							$filter["excludePremier"] = true;
+		if ( isset($_POST["showDeleted"]) )								$filter["showDeleted"] = true;
+		if ( isset($_POST["useMiles"]) )								$filter["useMiles"] = true;
+		if ( isset($_POST["startDate"]) && $_POST["startDate"] != "" )	$filter["startDate"] = $_POST["startDate"];
+		if ( isset($_POST["endDate"]) && $_POST["endDate"] != "" )		$filter["endDate"] = $_POST["endDate"];
+		if ( isset($_POST["latitude"]) )								$filter["latitude"] = $_POST["latitude"];
+		if ( isset($_POST["longitude"]) )								$filter["longitude"] = $_POST["longitude"];
+		if ( isset($_POST["radius"]) )									$filter["radius"] = $_POST["radius"];
 	}
 	
 	return $filter;
