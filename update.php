@@ -313,6 +313,22 @@ function updateTournamentId($tournamentID, $isHidden = false) {
 		$eventData["countryName"] = $tzData["countryName"];
 		$eventData["zoneName"] = $tzData["zoneName"];
 		
+		if ( $eventData["countryName"] == "Australia" && $eventData["provinceState"] == "" ) {
+			if ( $eventData["city"] == "Canberra" ) {
+				$eventData["provinceState"] = "ACT";
+			} elseif ( stripos($eventData["zoneName"], "Sydney") ) {
+				$eventData["provinceState"] = "NSW";
+			} elseif ( stripos($eventData["zoneName"], "Melbourne") ) {
+				$eventData["provinceState"] = "Vic";
+			} elseif ( stripos($eventData["zoneName"], "Hobart") ) {
+				$eventData["provinceState"] = "Tas";
+			} elseif ( stripos($eventData["zoneName"], "Adelaide") ) {
+				$eventData["provinceState"] = "SA";
+			} elseif ( stripos($eventData["zoneName"], "Perth") ) {
+				$eventData["provinceState"] = "WA";
+			}
+		}
+		
 		$json = json_encode($eventData, JSON_UNESCAPED_UNICODE);
 		if ( $eventData["countryName"] ) {
 			// We also cache the timezone data at this point. This means write access is only needed in
