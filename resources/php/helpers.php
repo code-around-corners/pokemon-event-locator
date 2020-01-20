@@ -50,7 +50,7 @@ function buildSearchFilter() {
 function getFilteredTournamentData($filters) {
 	$mysqli = new mysqli(DB_HOST, DB_READ_USER, DB_READ_PASS, DB_NAME);
 
-	$sql = "Select tournamentID, premierGroup, eventJson, lastUpdated, deleted From events Where ";
+	$sql = "Select tournamentID, premierGroup, provinceState, eventJson, lastUpdated, deleted From events Where ";
 
 	if ( isset($filters["showDeleted"]) ) {
 		$sql .= "1=1";
