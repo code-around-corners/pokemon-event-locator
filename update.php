@@ -15,7 +15,9 @@ if ( php_sapi_name() != "cli" ) {
 		fixProvinces();
 		addPremierGroups();
 	} else {
-		header("Location: index.php");
+        fixProvinces();
+        addPremierGroups();
+        header("Location: index.php");
 	}
 } else {
 	parse_str(implode('&', array_slice($argv, 1)), $_GET);

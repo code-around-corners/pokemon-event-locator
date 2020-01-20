@@ -153,7 +153,8 @@ function getFilteredTournamentData($filters) {
 			$data["lastUpdated"] = $tournament["lastUpdated"];
 			$data["deleted"] = $tournament["deleted"] == 1;
 			$data["premierGroup"] = $tournament["premierGroup"];
-			
+            $data["provinceState"] = $tournament["provinceState"];
+
 			$distanceCheck = true;
 			
 			if ( isset($filters["latitude"]) && isset($filters["longitude"]) ) {
