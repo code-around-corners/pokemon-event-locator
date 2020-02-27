@@ -63,8 +63,11 @@ function updateAllTournaments($runSuspiciousTournamentsOnly) {
 		foreach ( $newTournamentIDs as $tournamentID ) {
 			$updatedCount++;
 			echo ":: New Tournament " . $tournamentID . " (" . $updatedCount . "/" . MAX_PER_RUN . ")\r\n";
-			updateTournamentId($tournamentID);
-			if ( $updatedCount == MAX_PER_RUN ) break;
+            updateTournamentId($tournamentID);
+            $makerUrl = "https://maker.ifttt.com/trigger/" . IFTTT_TRIGGER . "/with/key/" . IFTTT_MAKER_KEY;
+            $makerUrl = "?value1=" . $tournamentID;
+            
+            if ( $updatedCount == MAX_PER_RUN ) break;
 		}
 	} else {
 		foreach ( $suspiciousIDs as $tournamentID ) {

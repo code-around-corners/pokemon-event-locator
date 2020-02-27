@@ -57,7 +57,11 @@ function getFilteredTournamentData($filters) {
 	} else {
 		$sql .= "deleted = 0";
 	}
-	
+
+    if ( isset($filters["tournamentID"]) ) {
+        $sql .= " And tournamentID = " . $filters["tournamentID"];
+    }
+
 	if ( isset($filters["countryName"]) ) {
 		$sql .= " And (1=0";
 		

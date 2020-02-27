@@ -5,7 +5,8 @@ include_once("resources/php/config.php");
 
 const VALID_API_CALLS = array(
 	"listEvents" 		=> "getEventList",
-	"listPeriods"		=> "getPeriods",
+    "listPeriods"		=> "getPeriods",
+    "getEvent"          => "getSingleEvent"
 );
 
 const ISO_2_TO_3 = array(
@@ -74,6 +75,31 @@ function getEventList() {
 		"status"	=> 200,
 		"data"		=> $tournaments
 	];
+}
+
+function getSingleEvent() {
+    if ( ! isset($_GET["tournamentId"]) ) {
+        return [
+            "result"    => "error",
+            "error"     => "No tournament ID has been specified.",
+            "status"    => 400
+        ];
+    }
+
+    $filter = array(
+        "tournamentID" => parseInt($_GET["tournamentId"], 10)
+    );
+    $tournaments = getFilteredTournamentData($filter);
+
+    foreach($tournaments as &$tournament) {
+        $tournament["isoCountryCode"] = ISO_2_TO_3[$tournament["countryCode"]];
+    }
+
+    return [
+        "result"    => "success",
+        "status"    => 200,
+        "data"      => $tournaments
+    ];
 }
 
 function getPeriods() {
