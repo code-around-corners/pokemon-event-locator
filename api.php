@@ -87,7 +87,7 @@ function getSingleEvent() {
     }
 
     $filter = array(
-        "tournamentID" => parseInt($_GET["tournamentId"], 10)
+        "tournamentID" => $_GET["tournamentId"]
     );
     $tournaments = getFilteredTournamentData($filter);
 

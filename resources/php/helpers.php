@@ -3,7 +3,7 @@
 define("MAJOR_VERSION", 3);
 define("MINOR_VERSION", 2);
 
-include_once("resources/php/config.php");
+include_once("config.php");
 
 // This function gets used to standardise the field names from the Pokemon website.
 function camelCase($str, array $noStrip = []) {
