@@ -66,7 +66,8 @@ function updateAllTournaments($runSuspiciousTournamentsOnly) {
             updateTournamentId($tournamentID);
             $makerUrl = "https://maker.ifttt.com/trigger/" . IFTTT_TRIGGER . "/with/key/" . IFTTT_MAKER_KEY;
             $makerUrl = "?value1=" . $tournamentID;
-            
+            file_get_contents($makerUrl);
+
             if ( $updatedCount == MAX_PER_RUN ) break;
 		}
 	} else {
